@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Task Ultimate Pro Max - تنظيم المهام والإنتاجية</title>
+<style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #4f46e5, #9333ea);
+            --container-bg: #ffffff;
+            --text-color: #1f2937;
+            --input-bg: #f9fafb;
+            --border-color: #e5e7eb;
+            --li-bg: #f3f4f6;
+        }
+
+        [data-theme="dark"] {
+            --bg-gradient: linear-gradient(135deg, #0f172a, #1e1b4b);
+            --container-bg: #1e293b;
+            --text-color: #f8fafc;
+            --input-bg: #0f172a;
+            --border-color: #334155;
+            --li-bg: #0f172a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: background 0.3s;
+        }
+
+        .container {
+            background: var(--container-bg);
+            color: var(--text-color);
+            width: 100%;
+            max-width: 520px;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            transition: background 0.3s, color 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #toast {
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #10b981;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: top 0.3s ease;
+            z-index: 100;
+        }
+        #toast.show {
+            top: 15px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        h2 {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .streak-badge {
+            background: #f59e0b;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .theme-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 2px;
+        }
+
+        .pomodoro-box {
+            background: rgba(79, 70, 229, 0.1);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .pomodoro-time {
+            font-size: 20px;
+            font-weight: bold;
+            color: #4f46e5;
+            margin-bottom: 5px;
+        }
+
+        .pomodoro-btns {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .pomo-btn {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .pomo-btn.reset {
+            background: #ef4444;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid var(--border-color);
+            background: var(--input-bg);
+            color: var(--text-color);
+            border-radius: 12px;
+            outline: none;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 12px;
+        }
+
+        .filter-btn {
+            flex: 1;
+            background: var(--input-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 6px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .filter-btn.active {
+            background: #4f46e5;
+            color: white;
+            border-color: #4f46e5;
+        }
+
+        .input-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        input[type="text"], input[type="datetime-local"], select {
+            padding: 10px 12px;
+            border: 2px solid var(--border-color);
+            background: var(--input-bg);
+            color: var(--text-color);
+            border-radius: 12px;
+            outline: none;
+            font-size: 13px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        .add-btn {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .add-btn:hover {
+            background: #4338ca;
+        }
+
+        .progress-container {
+            background: var(--border-color);
+            border-radius: 10px;
+            height: 8px;
+            width: 100%;
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: #10b981;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 15px;
+            opacity: 0.85;
+        }
+
+        ul {
+            list-style: none;
+            max-height: 180px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+            padding-right: 2px;
+        }
+
+        li {
+            background: var(--li-bg);
+            color: var(--text-color);
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-right: 6px solid #4f46e5;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        li.completed {
+            opacity: 0.5;
+            text-decoration: line-through;
+            border-right-color: #10b981;
+        }
+
+        li.expired {
+            border-right-color: #ef4444 !important;
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .task-info {
+            cursor: pointer;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .task-title {
+            font-size: 14px;
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .task-details {
+            font-size: 11px;
+            opacity: 0.7;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: #6366f1;
+            color: white;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: bold;
+        }
+
+        .repeat-badge {
+            background: #f59e0b;
+            color: white;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: bold;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .edit-btn {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 6px 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .delete-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 6px 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .clear-all {
+            width: 100%;
+            background: transparent;
+            color: #ef4444;
+            border: 1px dashed #ef4444;
+            padding: 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.2s;
+            margin-bottom: 15px;
+        }
+
+        .clear-all:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .extra-content {
+            padding: 15px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 12px;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+        .extra-content h3 {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #4f46e5;
+        }
+        .extra-content p {
+            margin-bottom: 8px;
+        }
+        .extra-content ul {
+            max-height: none;
+            padding-right: 18px;
+            list-style: disc;
+            margin-bottom: 8px;
+        }
+        .extra-content li {
+            background: none;
+            padding: 0;
+            margin: 0;
+            border: none;
+            box-shadow: none;
+            display: list-item;
+        }
+        
+        .article-link-box {
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: rgba(79, 70, 229, 0.08);
+            border-radius: 8px;
+            border: 1px dashed #4f46e5;
+            margin-bottom: 8px;
+        }
+        .article-link-box a {
+            color: #4f46e5;
+            text-decoration: none;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .article-link-box a:hover {
+            text-decoration: underline;
+        }
+
+        .site-footer {
+            text-align: center;
+            font-size: 12px;
+            opacity: 0.85;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+        }
+        .site-footer a {
+            color: #4f46e5;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .site-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+    <div class="container">
+        <div id="toast">إشعار</div>
+
+        <div class="header">
+            <h2>Nexus Task ⚡</h2>
+            <div class="header-right">
+                <span class="streak-badge" id="streakText">🔥 1 يوم</span>
+                <button class="theme-btn" id="themeToggle" title="تغيير المظهر">🌙</button>
+            </div>
+        </div>
+
+        <div class="pomodoro-box">
+            <div class="pomodoro-time" id="pomoTimer">25:00</div>
+            <div class="pomodoro-btns">
+                <button class="pomo-btn" id="pomoStart">بدء التركيز</button>
+                <button class="pomo-btn reset" id="pomoReset">إعادة ضبط</button>
+            </div>
+        </div>
+        
+        <input type="text" id="searchBox" class="search-box" placeholder="🔍 البحث في المهام...">
+
+        <div class="filter-tabs">
+            <button class="filter-btn active" data-filter="all">الكل</button>
+            <button class="filter-btn" data-filter="active">النشطة</button>
+            <button class="filter-btn" data-filter="completed">المكتملة</button>
+        </div>
+
+        <div class="input-section">
+            <input type="text" id="taskInput" placeholder="ما هي المهمة التي تريد إنجازها؟">
+            <div class="input-row">
+                <select id="categorySelect">
+                    <option value="Work">💼 العمل</option>
+                    <option value="Study">📚 الدراسة</option>
+                    <option value="Personal">🎯 شخصي</option>
+                </select>
+                <select id="repeatSelect">
+                    <option value="None">بدون تكرار</option>
+                    <option value="Daily">يومي</option>
+                    <option value="Weekly">أسبوعي</option>
+                </select>
+            </div>
+            <input type="datetime-local" id="dateTimeInput">
+            <button class="add-btn" id="addBtn">إضافة مهمة مع تنبيه</button>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <div class="stats">
+            <span id="statsText">المكتملة: 0 / 0</span>
+        </div>
+
+        <ul id="taskList"></ul>
+
+        <button class="clear-all" id="clearAllBtn">مسح جميع المهام</button>
+
+        <div class="extra-content">
+            <h3>📖 دليل زيادة الإنتاجية وتنظيم الوقت</h3>
+            <p>تطبيق <strong>Nexus Task</strong> هو أداة متكاملة صُممت لتنظيم وقتك والحد من التسويف. يعتمد التطبيق على أفضل استراتيجيات إدارة الوقت العالمية:</p>
+            <ul>
+                <li><strong>تقنية بومودورو (Pomodoro):</strong> تقسيم فترة العمل إلى جلسات تركيز مدتها 25 دقيقة تليها استراحة قصيرة، مما يزيد من القدرة على الاستيعاب والتركيز.</li>
+                <li><strong>تحديد الأولويات:</strong> تصنيف المهام حسب طبيعتها (عمل، دراسة، شخصي) يسهل عليك إدارة يومك بسلاسة.</li>
+                <li><strong>التنبيهات والمواعيد:</strong> ضبط التذكيرات للمهام المحددة بزمن يضمن لك عدم تفويت المواعيد النهائية (Deadlines).</li>
+            </ul>
+            <p>نصيحة: ابدأ يومك دائماً بتحديد أثر ثلاث مهام رئيسية تريد إنجازها، واستخدم المؤقت للحفاظ على تركيزك العالي بدون تشتيت.</p>
+            
+            <div class="article-link-box">
+                <a href="pomodoro.html">📌 اقرأ مقالنا الشامل: تقنية بومودورو لإدارة الوقت وزيادة الإنتاجية</a>
+            </div>
+            
+            <div class="article-link-box">
+                <a href="focus-tips.html">📌 اقرأ أيضاً: أفضل استراتيجيات التركيز والتغلب على التشتت</a>
+            </div>
+        </div>
+
+        <div class="site-footer">
+            <a href="about.html">من نحن</a>
+            <span>·</span>
+            <a href="privacy.html">سياسة الخصوصية</a>
+            <span>·</span>
+            <a href="contact.html">اتصل بنا</a>
+            <span>·</span>
+            <a href="blog.html">المدونة</a>
+        </div>
+    </div>
+
+    <script>
+        const taskInput = document.getElementById('taskInput');
+        const dateTimeInput = document.getElementById('dateTimeInput');
+        const categorySelect = document.getElementById('categorySelect');
+        const repeatSelect = document.getElementById('repeatSelect');
+        const addBtn = document.getElementById('addBtn');
+        const taskList = document.getElementById('taskList');
+        const statsText = document.getElementById('statsText');
+        const progressBar = document.getElementById('progressBar');
+        const themeToggle = document.getElementById('themeToggle');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        const searchBox = document.getElementById('searchBox');
+        const streakText = document.getElementById('streakText');
+        const toast = document.getElementById('toast');
+        const body = document.body;
+        const filterBtns = document.querySelectorAll('.filter-btn');
+
+        let currentFilter = 'all';
+        let editIndex = null;
+
+        const savedTheme = localStorage.getItem('nexus_theme') || 'light';
+        body.setAttribute('data-theme', savedTheme);
+        themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+
+        function playSound(type) {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                if (type === 'add') {
+                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.1);
+                } else if (type === 'complete' || type === 'alert') {
+                    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.15);
+                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.15);
+                } else if (type === 'delete') {
+                    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.15);
+                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.15);
+                }
+            } catch(e) {}
+        }
+
+        function showToast(message, color = '#10b981') {
+            toast.textContent = message;
+            toast.style.background = color;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        const pomoTimer = document.getElementById('pomoTimer');
+        const pomoStart = document.getElementById('pomoStart');
+        const pomoReset = document.getElementById('pomoReset');
+        let pomoInterval;
+        let timeLeft = 1500;
+        let isRunning = false;
+
+        const STORAGE_KEY = 'nexus_tasks_master_db';
+        let tasks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        let streak = JSON.parse(localStorage.getItem('nexus_streak')) || 1;
+        streakText.textContent = `🔥 ${streak} يوم`;
+
+        function saveAndRender() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+            renderTasks(searchBox.value);
+        }
+
+        function renderTasks(filterText = '') {
+            taskList.innerHTML = '';
+            let completedCount = 0;
+            const totalTasks = tasks.length;
+            const now = new Date();
+
+            tasks.forEach((task) => {
+                if (task.completed) completedCount++;
+            });
+
+            const filteredTasks = tasks.filter(task => {
+                const matchesSearch = task.text.toLowerCase().includes(filterText.toLowerCase());
+                if (currentFilter === 'active') return matchesSearch && !task.completed;
+                if (currentFilter === 'completed') return matchesSearch && task.completed;
+                return matchesSearch;
+            });
+
+            filteredTasks.forEach((task) => {
+                const originalIndex = tasks.indexOf(task);
+                const li = document.createElement('li');
+                if (task.completed) li.classList.add('completed');
+
+                if (task.datetime && !task.completed) {
+                    const taskDate = new Date(task.datetime);
+                    if (now > taskDate) {
+                        li.classList.add('expired');
+                    }
+                }
+
+                const taskInfo = document.createElement('div');
+                taskInfo.className = 'task-info';
+                taskInfo.addEventListener('click', () => {
+                    tasks[originalIndex].completed = !tasks[originalIndex].completed;
+                    if (tasks[originalIndex].completed) {
+                        playSound('complete');
+                        showToast('تم إنجاز المهمة! 🎉');
+                    }
+                    saveAndRender();
+                });
+
+                const titleSpan = document.createElement('span');
+                titleSpan.className = 'task-title';
+                titleSpan.textContent = task.text;
+
+                const detailsDiv = document.createElement('div');
+                detailsDiv.className = 'task-details';
+                
+                const badge = document.createElement('span');
+                badge.className = 'badge';
+                badge.textContent = task.category;
+
+                const repeatBadge = document.createElement('span');
+                repeatBadge.className = 'repeat-badge';
+                repeatBadge.textContent = `🔁 ${task.repeat}`;
+                
+                const dateSpan = document.createElement('span');
+                dateSpan.textContent = task.datetime ? `⏰ ${task.datetime.replace('T', ' ')}` : '';
+
+                detailsDiv.appendChild(badge);
+                if(task.repeat !== 'None') detailsDiv.appendChild(repeatBadge);
+                detailsDiv.appendChild(dateSpan);
+
+                taskInfo.appendChild(titleSpan);
+                taskInfo.appendChild(detailsDiv);
+
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'task-actions';
+
+                const editBtn = document.createElement('button');
+                editBtn.className = 'edit-btn';
+                editBtn.textContent = 'تعديل';
+                editBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    taskInput.value = task.text;
+                    categorySelect.value = task.category;
+                    repeatSelect.value = task.repeat;
+                    dateTimeInput.value = task.datetime;
+                    editIndex = originalIndex;
+                    addBtn.textContent = 'تحديث المهمة';
+                    taskInput.focus();
+                });
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.textContent = 'حذف';
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    tasks.splice(originalIndex, 1);
+                    playSound('delete');
+                    showToast('تم حذف المهمة', '#ef4444');
+                    saveAndRender();
+                });
+
+                actionsDiv.appendChild(editBtn);
+                actionsDiv.appendChild(deleteBtn);
+
+                li.appendChild(taskInfo);
+                li.appendChild(actionsDiv);
+                taskList.appendChild(li);
+            });
+
+            statsText.textContent = `المكتملة: ${completedCount} / ${totalTasks}`;
+            const progressPercent = totalTasks === 0 ? 0 : (completedCount / totalTasks) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+        }
+
+        function addTask() {
+            const text = taskInput.value.trim();
+            const category = categorySelect.value;
+            const repeat = repeatSelect.value;
+            const datetime = dateTimeInput.value;
+
+            if (text === '') {
+                showToast('الرجاء كتابة اسم المهمة!', '#f59e0b');
+                return;
+            }
+
+            if (editIndex !== null) {
+                tasks[editIndex] = { 
+                    ...tasks[editIndex],
+                    text: text, 
+                    category: category, 
+                    repeat: repeat, 
+                    datetime: datetime, 
+                    alerted: false 
+                };
+                editIndex = null;
+                addBtn.textContent = 'إضافة مهمة مع تنبيه';
+                showToast('تم تحديث المهمة بنجاح!');
+            } else {
+                tasks.push({ 
+                    text: text, 
+                    completed: false, 
+                    category: category, 
+                    repeat: repeat, 
+                    datetime: datetime, 
+                    alerted: false 
+                });
+                showToast('تمت إضافة المهمة والتنبيه بنجاح!');
+            }
+
+            taskInput.value = '';
+            dateTimeInput.value = '';
+            taskInput.focus();
+            playSound('add');
+            saveAndRender();
+        }
+
+        setInterval(() => {
+            const now = new Date();
+            let needsUpdate = false;
+            
+            tasks.forEach(task => {
+                if (task.datetime && !task.completed && !task.alerted) {
+                    const taskDate = new Date(task.datetime);
+                    if (now.getTime() >= taskDate.getTime()) {
+                        task.alerted = true;
+                        needsUpdate = true;
+                        playSound('alert');
+                        showToast(`⏰ انتهى وقت المهمة: "${task.text}"`, '#ef4444');
+                    }
+                }
+            });
+
+            if (needsUpdate) {
+                saveAndRender();
+            }
+        }, 1000);
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            pomoTimer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        pomoStart.addEventListener('click', () => {
+            if (!isRunning) {
+                isRunning = true;
+                pomoStart.textContent = 'إيقاف موقت';
+                pomoInterval = setInterval(() => {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(pomoInterval);
+                        playSound('complete');
+                        showToast('انتهت جلسة التركيز!');
+                        isRunning = false;
+                        pomoStart.textContent = 'بدء التركيز';
+                    }
+                }, 1000);
+            } else {
+                clearInterval(pomoInterval);
+                isRunning = false;
+                pomoStart.textContent = 'بدء التركيز';
+            }
+        });
+
+        pomoReset.addEventListener('click', () => {
+            clearInterval(pomoInterval);
+            isRunning = false;
+            timeLeft = 1500;
+            updateTimerDisplay();
+            pomoStart.textContent = 'بدء التركيز';
+        });
+
+        addBtn.addEventListener('click', addTask);
+        taskInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTask();
+        });
+
+        searchBox.addEventListener('input', (e) => {
+            renderTasks(e.target.value);
+        });
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.getAttribute('data-filter');
+                renderTasks(searchBox.value);
+            });
+        });
+
+        clearAllBtn.addEventListener('click', () => {
+            tasks = [];
+            playSound('delete');
+            showToast('تم مسح جميع المهام', '#ef4444');
+            saveAndRender();
+        });
+
+        themeToggle.addEventListener('click', () => {
+            if (body.getAttribute('data-theme') === 'light') {
+                body.setAttribute('data-theme', 'dark');
+                themeToggle.textContent = '☀️';
+                localStorage.setItem('nexus_theme', 'dark');
+            } else {
+                body.setAttribute('data-theme', 'light');
+                themeToggle.textContent = '🌙';
+                localStorage.setItem('nexus_theme', 'light');
+            }
+        });
+
+        renderTasks();
+    </script>
+</body>
+</html>
