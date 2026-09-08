@@ -5,6 +5,7 @@ const repeatSelect = document.getElementById('repeatSelect');
 const addBtn = document.getElementById('addBtn');
 const taskList = document.getElementById('taskList');
 const statsText = document.getElementById('statsText');
+const scoreText = document.getElementById('scoreText');
 const progressBar = document.getElementById('progressBar');
 const themeToggle = document.getElementById('themeToggle');
 const clearAllBtn = document.getElementById('clearAllBtn');
@@ -14,6 +15,17 @@ const toast = document.getElementById('toast');
 const body = document.body;
 const filterBtns = document.querySelectorAll('.filter-btn');
 
+// عناصر إضافية جديدة
+const openGuideBtn = document.getElementById('openGuideBtn');
+const closeGuideBtn = document.getElementById('closeGuideBtn');
+const guideModal = document.getElementById('guideModal');
+const templateChips = document.querySelectorAll('.template-chip');
+const nicknameInput = document.getElementById('nicknameInput');
+const saveNicknameBtn = document.getElementById('saveNicknameBtn');
+const leaderboardList = document.getElementById('leaderboardList');
+const friendSearchInput = document.getElementById('friendSearchInput');
+const addFriendBtn = document.getElementById('addFriendBtn');
+
 let currentFilter = 'all';
 let editIndex = null;
 
@@ -21,6 +33,7 @@ const savedTheme = localStorage.getItem('nexus_theme') || 'light';
 body.setAttribute('data-theme', savedTheme);
 themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
 
+// صوت رقمي داخلي مدمج
 function playSound(type) {
     try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -43,7 +56,7 @@ function playSound(type) {
             gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
             osc.start();
             osc.stop(audioCtx.currentTime + 0.15);
-        } else if (type === 'delete') {
+        } else if (type === 'delete' || type === 'penalty') {
             osc.frequency.setValueAtTime(300, audioCtx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.15);
             gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
@@ -72,15 +85,78 @@ let isRunning = false;
 
 const STORAGE_KEY = 'nexus_tasks_master_db';
 let tasks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-let streak = JSON.parse(localStorage.getItem('nexus_streak')) || 1;
+let streak = JSON.parse(localStorage.getItem('nexus_streak')) || 0;
+let score = JSON.parse(localStorage.getItem('nexus_score')) || 50;
+let lastActiveTime = JSON.parse(localStorage.getItem('nexus_last_active')) || Date.now();
+let myNickname = localStorage.getItem('nexus_nickname') || 'البطل';
+
+if(nicknameInput) nicknameInput.value = myNickname !== 'البطل' ? myNickname : '';
+
+// لوحة المتصدرين الافتراضية
+let leaderboardData = JSON.parse(localStorage.getItem('nexus_leaderboard')) || [
+    { name: 'يوسف برو 💻', score: 320 },
+    { name: 'أمينة النشيطة 📚', score: 240 },
+    { name: 'كريم السريع ⚡', score: 190 }
+];
+
+// فحص دقيق لـ 24 ساعة للـ Streak والتدهور
+function checkDailyStreakAndDeterioration() {
+    const now = Date.now();
+    const hoursPassed = (now - lastActiveTime) / (1000 * 60 * 60);
+
+    // إذا مرّت أكثر من 24 ساعة ولم ينجز المستخدم شيئاً
+    if (hoursPassed >= 24) {
+        streak = 0;
+        score = Math.max(0, score - 25); // خصم نقاط التدهور
+        playSound('penalty');
+        showToast('⚠️ انتبه! لقد مرّت 24 ساعة دون أي إنجاز، مستواك في تدهور والـ Streak انصفر!', '#ef4444');
+        lastActiveTime = now;
+        localStorage.setItem('nexus_last_active', JSON.stringify(lastActiveTime));
+        saveAndRender();
+    }
+}
+setInterval(checkDailyStreakAndDeterioration, 60000); // التحقق كل دقيقة
+checkDailyStreakAndDeterioration();
+
 streakText.textContent = `🔥 ${streak} يوم`;
+if(scoreText) scoreText.textContent = `النقاط: ${score} ⭐`;
 
 function saveAndRender() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    localStorage.setItem('nexus_score', JSON.stringify(score));
+    localStorage.setItem('nexus_streak', JSON.stringify(streak));
     renderTasks(searchBox.value);
+    updateLeaderboard();
+}
+
+function updateLeaderboard() {
+    const myIndex = leaderboardData.findIndex(item => item.me);
+    if (myIndex !== -1) {
+        leaderboardData[myIndex].score = score;
+        leaderboardData[myIndex].name = myNickname + ' (أنت)';
+    } else {
+        leaderboardData.push({ name: myNickname + ' (أنت)', score: score, me: true });
+    }
+
+    leaderboardData.sort((a, b) => b.score - a.score);
+    localStorage.setItem('nexus_leaderboard', JSON.stringify(leaderboardData));
+
+    if(leaderboardList) {
+        leaderboardList.innerHTML = '';
+        leaderboardData.forEach((user, index) => {
+            const li = document.createElement('li');
+            li.className = `leaderboard-item ${user.me ? 'me' : ''}`;
+            li.innerHTML = `
+                <span>#${index + 1} ${user.name}</span>
+                <span style="font-weight:bold; color:#4f46e5;">${user.score} ⭐</span>
+            `;
+            leaderboardList.appendChild(li);
+        });
+    }
 }
 
 function renderTasks(filterText = '') {
+    if(!taskList) return;
     taskList.innerHTML = '';
     let completedCount = 0;
     const totalTasks = tasks.length;
@@ -106,6 +182,12 @@ function renderTasks(filterText = '') {
             const taskDate = new Date(task.datetime);
             if (now > taskDate) {
                 li.classList.add('expired');
+                if (!task.penalized) {
+                    task.penalized = true;
+                    score = Math.max(0, score - 10);
+                    playSound('penalty');
+                    showToast(`⚠️ فات موعد المهمة: "${task.text}"`, '#ef4444');
+                }
             }
         }
 
@@ -113,9 +195,17 @@ function renderTasks(filterText = '') {
         taskInfo.className = 'task-info';
         taskInfo.addEventListener('click', () => {
             tasks[originalIndex].completed = !tasks[originalIndex].completed;
+            lastActiveTime = Date.now(); // تحديث توقيت آخر تفاعل
+            localStorage.setItem('nexus_last_active', JSON.stringify(lastActiveTime));
+
             if (tasks[originalIndex].completed) {
+                score += 20;
+                streak += 1; // زيادة الـ Streak مع إنجاز المهمة
                 playSound('complete');
-                showToast('تم إنجاز المهمة! 🎉');
+                showToast('تم إنجاز المهمة بنجاح! +20 ⭐ +1 يوم Streak');
+            } else {
+                score = Math.max(0, score - 20);
+                streak = Math.max(0, streak - 1);
             }
             saveAndRender();
         });
@@ -182,6 +272,8 @@ function renderTasks(filterText = '') {
     });
 
     statsText.textContent = `المكتملة: ${completedCount} / ${totalTasks}`;
+    if(scoreText) scoreText.textContent = `النقاط: ${score} ⭐`;
+    if(streakText) streakText.textContent = `🔥 ${streak} يوم`;
     const progressPercent = totalTasks === 0 ? 0 : (completedCount / totalTasks) * 100;
     progressBar.style.width = `${progressPercent}%`;
 }
@@ -204,7 +296,8 @@ function addTask() {
             category: category, 
             repeat: repeat, 
             datetime: datetime, 
-            alerted: false 
+            alerted: false,
+            penalized: false
         };
         editIndex = null;
         addBtn.textContent = 'إضافة مهمة مع تنبيه';
@@ -216,9 +309,10 @@ function addTask() {
             category: category, 
             repeat: repeat, 
             datetime: datetime, 
-            alerted: false 
+            alerted: false,
+            penalized: false
         });
-        showToast('تمت إضافة المهمة والتنبيه بنجاح!');
+        showToast('تمت إضافة المهمة بنجاح!');
     }
 
     taskInput.value = '';
@@ -228,6 +322,7 @@ function addTask() {
     saveAndRender();
 }
 
+// فحص التنبيهات
 setInterval(() => {
     const now = new Date();
     let needsUpdate = false;
@@ -244,9 +339,7 @@ setInterval(() => {
         }
     });
 
-    if (needsUpdate) {
-        saveAndRender();
-    }
+    if (needsUpdate) saveAndRender();
 }, 1000);
 
 function updateTimerDisplay() {
@@ -266,9 +359,11 @@ pomoStart.addEventListener('click', () => {
             } else {
                 clearInterval(pomoInterval);
                 playSound('complete');
-                showToast('انتهت جلسة التركيز!');
+                score += 30;
+                showToast('🎉 انتهت جلسة التركيز بنجاح! +30 نقطة');
                 isRunning = false;
                 pomoStart.textContent = 'بدء التركيز';
+                saveAndRender();
             }
         }, 1000);
     } else {
@@ -286,14 +381,56 @@ pomoReset.addEventListener('click', () => {
     pomoStart.textContent = 'بدء التركيز';
 });
 
-addBtn.addEventListener('click', addTask);
-taskInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') addTask();
-});
+// الأزرار التفاعلية والقب والأصدقاء والدليل المنبثق
+if(templateChips) {
+    templateChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            taskInput.value = chip.getAttribute('data-task');
+            categorySelect.value = 'Study';
+            taskInput.focus();
+        });
+    });
+}
 
-searchBox.addEventListener('input', (e) => {
-    renderTasks(e.target.value);
-});
+if(saveNicknameBtn) {
+    saveNicknameBtn.addEventListener('click', () => {
+        const name = nicknameInput.value.trim();
+        if (name) {
+            myNickname = name;
+            localStorage.setItem('nexus_nickname', myNickname);
+            showToast('تم حفظ اللقب بنجاح! 🏆');
+            updateLeaderboard();
+        } else {
+            showToast('الرجاء إدخال لقب صالح!', '#f59e0b');
+        }
+    });
+}
+
+if(addFriendBtn) {
+    addFriendBtn.addEventListener('click', () => {
+        const friendName = friendSearchInput.value.trim();
+        if (friendName) {
+            leaderboardData.push({ name: friendName + ' ⚔️', score: Math.floor(Math.random() * 150) + 50 });
+            friendSearchInput.value = '';
+            showToast(`تمت إضافة الصديق "${friendName}" للتحدي!`);
+            updateLeaderboard();
+        } else {
+            showToast('اكتب اسم الصديق أولاً!', '#f59e0b');
+        }
+    });
+}
+
+if(openGuideBtn && guideModal) {
+    openGuideBtn.addEventListener('click', () => guideModal.classList.add('active'));
+    closeGuideBtn.addEventListener('click', () => guideModal.classList.remove('active'));
+    window.addEventListener('click', (e) => {
+        if(e.target === guideModal) guideModal.classList.remove('active');
+    });
+}
+
+addBtn.addEventListener('click', addTask);
+taskInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addTask(); });
+searchBox.addEventListener('input', (e) => { renderTasks(e.target.value); });
 
 filterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -324,3 +461,4 @@ themeToggle.addEventListener('click', () => {
 });
 
 renderTasks();
+updateLeaderboard();

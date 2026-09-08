@@ -3,95 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Task Ultimate Pro Max - تنظيم المهام والإنتاجية</title>
+    <title>Nexus Task Ultimate Pro Max - تنظيم المهام والمنافسة</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body data-theme="light">
 
-    <div class="container">
-        <div id="toast">إشعار</div>
+    <div class="app-layout">
+        <!-- التطبيق الرئيسي -->
+        <div class="container">
+            <div id="toast">إشعار</div>
 
-        <div class="header">
-            <h2>Nexus Task ⚡</h2>
-            <div class="header-right">
-                <span class="streak-badge" id="streakText">🔥 1 يوم</span>
-                <button class="theme-btn" id="themeToggle" title="تغيير المظهر">🌙</button>
+            <div class="header">
+                <h2>Nexus Task ⚡</h2>
+                <div class="header-right">
+                    <button class="guide-btn-icon" id="openGuideBtn" title="دليل الإنتاجية">📖</button>
+                    <span class="streak-badge" id="streakText">🔥 0 يوم</span>
+                    <button class="theme-btn" id="themeToggle" title="تغيير المظهر">🌙</button>
+                </div>
+            </div>
+
+            <div class="pomodoro-box">
+                <div class="pomodoro-time" id="pomoTimer">25:00</div>
+                <div class="pomodoro-btns">
+                    <button class="pomo-btn" id="pomoStart">بدء التركيز</button>
+                    <button class="pomo-btn reset" id="pomoReset">إعادة ضبط</button>
+                </div>
+            </div>
+            
+            <input type="text" id="searchBox" class="search-box" placeholder="🔍 البحث في المهام...">
+
+            <!-- قوالب المهام السريعة الجاهزة بنقرة واحدة -->
+            <div class="quick-templates">
+                <span style="font-size:11px; align-self:center; font-weight:bold; opacity:0.7;">جاهز:</span>
+                <button class="template-chip" data-task="رياضة صباحية 20 دقيقة">🏃‍♂️ رياضة</button>
+                <button class="template-chip" data-task="قراءة 10 صفحات كتاب">📚 قراءة</button>
+                <button class="template-chip" data-task="مراجعة دروس اليوم">📝 مراجعة</button>
+                <button class="template-chip" data-task="شرب لترين من الماء">💧 ماء</button>
+            </div>
+
+            <div class="filter-tabs">
+                <button class="filter-btn active" data-filter="all">الكل</button>
+                <button class="filter-btn" data-filter="active">النشطة</button>
+                <button class="filter-btn" data-filter="completed">المكتملة</button>
+            </div>
+
+            <div class="input-section">
+                <input type="text" id="taskInput" placeholder="ما هي المهمة التي تريد إنجازها؟">
+                <div class="input-row">
+                    <select id="categorySelect">
+                        <option value="Work">💼 العمل</option>
+                        <option value="Study">📚 الدراسة</option>
+                        <option value="Personal">🎯 شخصي</option>
+                    </select>
+                    <select id="repeatSelect">
+                        <option value="None">بدون تكرار</option>
+                        <option value="Daily">يومي</option>
+                        <option value="Weekly">أسبوعي</option>
+                    </select>
+                </div>
+                <input type="datetime-local" id="dateTimeInput">
+                <button class="add-btn" id="addBtn">إضافة مهمة مع تنبيه</button>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            
+            <div class="stats">
+                <span id="statsText">المكتملة: 0 / 0</span>
+                <span id="scoreText">النقاط: 50 ⭐</span>
+            </div>
+
+            <ul id="taskList"></ul>
+
+            <button class="clear-all" id="clearAllBtn">مسح جميع المهام</button>
+
+            <div class="site-footer">
+                <a href="about.html">من نحن</a>
+                <span>·</span>
+                <a href="privacy.html">سياسة الخصوصية</a>
+                <span>·</span>
+                <a href="contact.html">اتصل بنا</a>
+                <span>·</span>
+                <a href="blog.html">المدونة</a>
             </div>
         </div>
 
-        <div class="pomodoro-box">
-            <div class="pomodoro-time" id="pomoTimer">25:00</div>
-            <div class="pomodoro-btns">
-                <button class="pomo-btn" id="pomoStart">بدء التركيز</button>
-                <button class="pomo-btn reset" id="pomoReset">إعادة ضبط</button>
+        <!-- لوحة الأصدقاء والمنافسة الجانبية -->
+        <div class="social-sidebar">
+            <h3>🏆 تحدي أصدقاء الإنتاجية</h3>
+            <div class="profile-box">
+                <input type="text" id="nicknameInput" placeholder="أدخل لقبك (مثال: Hero)...">
+                <button class="pomo-btn" id="saveNicknameBtn" style="padding: 10px;">حفظ</button>
             </div>
-        </div>
-        
-        <input type="text" id="searchBox" class="search-box" placeholder="🔍 البحث في المهام...">
-
-        <div class="filter-tabs">
-            <button class="filter-btn active" data-filter="all">الكل</button>
-            <button class="filter-btn" data-filter="active">النشطة</button>
-            <button class="filter-btn" data-filter="completed">المكتملة</button>
-        </div>
-
-        <div class="input-section">
-            <input type="text" id="taskInput" placeholder="ما هي المهمة التي تريد إنجازها؟">
-            <div class="input-row">
-                <select id="categorySelect">
-                    <option value="Work">💼 العمل</option>
-                    <option value="Study">📚 الدراسة</option>
-                    <option value="Personal">🎯 شخصي</option>
-                </select>
-                <select id="repeatSelect">
-                    <option value="None">بدون تكرار</option>
-                    <option value="Daily">يومي</option>
-                    <option value="Weekly">أسبوعي</option>
-                </select>
-            </div>
-            <input type="datetime-local" id="dateTimeInput">
-            <button class="add-btn" id="addBtn">إضافة مهمة مع تنبيه</button>
-        </div>
-
-        <div class="progress-container">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
-        
-        <div class="stats">
-            <span id="statsText">المكتملة: 0 / 0</span>
-        </div>
-
-        <ul id="taskList"></ul>
-
-        <button class="clear-all" id="clearAllBtn">مسح جميع المهام</button>
-
-        <div class="extra-content">
-            <h3>📖 دليل زيادة الإنتاجية وتنظيم الوقت</h3>
-            <p>تطبيق <strong>Nexus Task</strong> هو أداة متكاملة صُممت لتنظيم وقتك والحد من التسويف. يعتمد التطبيق على أفضل استراتيجيات إدارة الوقت العالمية:</p>
-            <ul>
-                <li><strong>تقنية بومودورو (Pomodoro):</strong> تقسيم فترة العمل إلى جلسات تركيز مدتها 25 دقيقة تليها استراحة قصيرة، مما يزيد من القدرة على الاستيعاب والتركيز.</li>
-                <li><strong>تحديد الأولويات:</strong> تصنيف المهام حسب طبيعتها (عمل، دراسة، شخصي) يسهل عليك إدارة يومك بسلاسة.</li>
-                <li><strong>التنبيهات والمواعيد:</strong> ضبط التذكيرات للمهام المحددة بزمن يضمن لك عدم تفويت المواعيد النهائية (Deadlines).</li>
+            <p style="font-size: 12px; opacity: 0.8; margin-bottom: 8px;">ترتيب الأبطال العالمي:</p>
+            <ul class="leaderboard-list" id="leaderboardList">
+                <!-- يتم تعبئتها ديناميكياً -->
             </ul>
-            <p>نصيحة: ابدأ يومك دائماً بتحديد أثر ثلاث مهام رئيسية تريد إنجازها، واستخدم المؤقت للحفاظ على تركيزك العالي بدون تشتيت.</p>
-            
-            <div class="article-link-box">
-                <a href="pomodoro.html">📌 اقرأ مقالنا الشامل: تقنية بومودورو لإدارة الوقت وزيادة الإنتاجية</a>
-            </div>
-            
-            <div class="article-link-box">
-                <a href="focus-tips.html">📌 اقرأ أيضاً: أفضل استراتيجيات التركيز والتغلب على التشتت</a>
+            <div style="display: flex; gap: 8px;">
+                <input type="text" id="friendSearchInput" placeholder="ابحث عن صديق للمنافسة..." style="flex:1;">
+                <button class="pomo-btn" id="addFriendBtn">تنافس ⚔️</button>
             </div>
         </div>
+    </div>
 
-        <div class="site-footer">
-            <a href="about.html">من نحن</a>
-            <span>·</span>
-            <a href="privacy.html">سياسة الخصوصية</a>
-            <span>·</span>
-            <a href="contact.html">اتصل بنا</a>
-            <span>·</span>
-            <a href="blog.html">المدونة</a>
+    <!-- نافذة دليل الإنتاجية المنبثقة (Modal) -->
+    <div class="modal-overlay" id="guideModal">
+        <div class="modal-content">
+            <button class="close-modal" id="closeGuideBtn">✕</button>
+            <h3 style="color: #4f46e5; margin-bottom: 10px;">📖 دليل زيادة الإنتاجية وتنظيم الوقت</h3>
+            <p style="font-size: 13px; line-height: 1.6; margin-bottom: 10px;">
+                تطبيق <strong>Nexus Task</strong> هو أداة متكاملة صُممت لتنظيم وقتك والحد من التسويف عبر استراتيجيات عالمية:
+            </p>
+            <ul style="font-size: 13px; line-height: 1.6; padding-right: 18px; margin-bottom: 15px;">
+                <li><strong>تقنية بومودورو (Pomodoro):</strong> تقسيم العمل لجلسات تركيز 25 دقيقة لتجنب التشتت.</li>
+                <li><strong>الالتزام اليومي (Streak):</strong> أنجز ولو مهمة واحدة كل 24 ساعة للحفاظ على سلاسل الاشتعال ورفع نقاطك في الترتيب العالمي.</li>
+            </ul>
+            <div class="article-link-box" style="margin-bottom: 8px;">
+                <a href="pomodoro.html" style="color: #4f46e5; text-decoration: none; font-weight: bold; font-size: 12px;">📌 مقال تقنية بومودورو الشامل</a>
+            </div>
+            <div class="article-link-box">
+                <a href="focus-tips.html" style="color: #4f46e5; text-decoration: none; font-weight: bold; font-size: 12px;">📌 أفضل استراتيجيات التركيز والتغلب على التشتت</a>
+            </div>
         </div>
     </div>
 
