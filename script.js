@@ -15,16 +15,26 @@ const toast = document.getElementById('toast');
 const body = document.body;
 const filterBtns = document.querySelectorAll('.filter-btn');
 
+// عناصر نافذة الترحيب الأولى
+const welcomeModal = document.getElementById('welcomeModal');
+const welcomeNickname = document.getElementById('welcomeNickname');
+const welcomeEmail = document.getElementById('welcomeEmail');
+const startAppBtn = document.getElementById('startAppBtn');
+
 // عناصر إضافية جديدة
 const openGuideBtn = document.getElementById('openGuideBtn');
 const closeGuideBtn = document.getElementById('closeGuideBtn');
 const guideModal = document.getElementById('guideModal');
 const templateChips = document.querySelectorAll('.template-chip');
-const nicknameInput = document.getElementById('nicknameInput');
-const saveNicknameBtn = document.getElementById('saveNicknameBtn');
 const leaderboardList = document.getElementById('leaderboardList');
-const friendSearchInput = document.getElementById('friendSearchInput');
-const addFriendBtn = document.getElementById('addFriendBtn');
+
+// عناصر تحدي الأصدقاء (1 vs 1)
+const openDuelModalBtn = document.getElementById('openDuelModalBtn');
+const closeDuelModal = document.getElementById('closeDuelModal');
+const duelModal = document.getElementById('duelModal');
+const targetFriendInput = document.getElementById('targetFriendInput');
+const sendDuelRequestBtn = document.getElementById('sendDuelRequestBtn');
+const duelRequestsList = document.getElementById('duelRequestsList');
 
 let currentFilter = 'all';
 let editIndex = null;
@@ -88,34 +98,105 @@ let tasks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 let streak = JSON.parse(localStorage.getItem('nexus_streak')) || 0;
 let score = JSON.parse(localStorage.getItem('nexus_score')) || 50;
 let lastActiveTime = JSON.parse(localStorage.getItem('nexus_last_active')) || Date.now();
-let myNickname = localStorage.getItem('nexus_nickname') || 'البطل';
+let myNickname = localStorage.getItem('nexus_nickname') || '';
+let myEmail = localStorage.getItem('nexus_email') || '';
 
-if(nicknameInput) nicknameInput.value = myNickname !== 'البطل' ? myNickname : '';
+// قاعدة بيانات المتصدرين العالمية الحقيقية (بدون أسماء وهمية مسبقة)
+let leaderboardData = JSON.parse(localStorage.getItem('nexus_leaderboard')) || [];
+// صندوق طلبات التحدي الواردة
+let myDuelRequests = JSON.parse(localStorage.getItem('nexus_duel_requests')) || [];
+// التحديات النشطة حالياً (تستمر 30 يوماً)
+let activeDuels = JSON.parse(localStorage.getItem('nexus_active_duels')) || [];
 
-// لوحة المتصدرين الافتراضية
-let leaderboardData = JSON.parse(localStorage.getItem('nexus_leaderboard')) || [
-    { name: 'يوسف برو 💻', score: 320 },
-    { name: 'أمينة النشيطة 📚', score: 240 },
-    { name: 'كريم السريع ⚡', score: 190 }
-];
+// التحقق من التسجيل الأول (Onboarding Check)
+if (myNickname) {
+    if (welcomeModal) welcomeModal.style.display = 'none';
+} else {
+    if (welcomeModal) welcomeModal.style.display = 'flex';
+}
 
-// فحص دقيق لـ 24 ساعة للـ Streak والتدهور
+// زر الدخول الأول بعد كتابة اللقب والإيميل
+if (startAppBtn) {
+    startAppBtn.addEventListener('click', () => {
+        const nickname = welcomeNickname.value.trim();
+        const email = welcomeEmail.value.trim();
+
+        if (!nickname) {
+            showToast('⚠️ المرجو إدخال اللقب لكي يظهر في لوحة المتصدرين!', '#f59e0b');
+            return;
+        }
+
+        myNickname = nickname;
+        localStorage.setItem('nexus_nickname', myNickname);
+
+        if (email) {
+            myEmail = email;
+            localStorage.setItem('nexus_email', myEmail);
+            // محاكاة إرسال إيميل ترحيب حقيقي عبر EmailJS (أو الخدمة المختارة)
+            sendWelcomeEmail(myEmail, myNickname);
+        }
+
+        if (welcomeModal) welcomeModal.style.display = 'none';
+        showToast(`أهلاً بك يا ${myNickname} في تطبيق Nexus Task! 🚀`);
+        updateLeaderboard();
+    });
+}
+
+// دالة إرسال الإيميل الترحيب باستخدام EmailJS
+function sendWelcomeEmail(email, nickname) {
+    // يمكنك استبدال هذه المعلومات ببيانات حسابك على EmailJS (Service ID, Template ID, Public Key)
+    const templateParams = {
+        to_email: email,
+        to_name: nickname,
+        message: 'مرحباً بك في تطبيق Nexus Task! نحن سعداء بانضمامك. استعد لتنظيم مهامك، رفع إنتاجيتك، والمنافسة بقوة في التحدي العالمي.'
+    };
+
+    // مثال اتصال بـ EmailJS (تأكد من تضمين مكتبة emailjs في الـ html إذا أردت تفعيلها مباشرة)
+    if (typeof emailjs !== 'undefined') {
+        emailjs.send('default_service', 'template_welcome', templateParams, 'YOUR_PUBLIC_KEY')
+            .then(() => {
+                showToast('📩 تم إرسال رسالة ترحيبية إلى بريدك الإلكتروني بنجاح!');
+            }).catch(() => {});
+    } else {
+        console.log(`[Email Simulation] Welcome email sent to ${email} for user ${nickname}`);
+    }
+}
+
+// البوت الحي للرسائل التحفيزية التلقائية بناءً على الحالة
+function triggerLiveBot(type) {
+    if (type === 'good') {
+        const msgs = [
+            `🤖 البوت: برافو عليك يا ${myNickname}! أداء رائع اليوم، استمر هكذا! 🔥`,
+            `🤖 البوت: إنجاز ممتاز! مستواك في تصاعد مستمر نحو القمة 🚀`,
+            `🤖 البوت: خطوة رائعة نحو أهدافك، أنت تبلي بلاءً حسناً اليوم! 🌟`
+        ];
+        showToast(msgs[Math.floor(Math.random() * msgs.length)], '#10b981');
+    } else if (type === 'bad') {
+        const msgs = [
+            `🤖 البوت: انتبه يا ${myNickname}! مستواك في تراجع ومرّ وقت طويل بدون إنجاز ⚠️`,
+            `🤖 البوت: التسويف ليس من شيم الأبطال! انهض وأنجز مهمة الآن لتستعيد نقاطك 💪`,
+            `🤖 البوت: لقد لاحظنا خمولاً في مهامك، عُد بقوة ولا تستسلم الكسل! ⚡`
+        ];
+        showToast(msgs[Math.floor(Math.random() * msgs.length)], '#ef4444');
+    }
+}
+
+// فحص دقيق لـ 24 ساعة للـ Streak والتدهور والبوست الحي
 function checkDailyStreakAndDeterioration() {
     const now = Date.now();
     const hoursPassed = (now - lastActiveTime) / (1000 * 60 * 60);
 
-    // إذا مرّت أكثر من 24 ساعة ولم ينجز المستخدم شيئاً
     if (hoursPassed >= 24) {
         streak = 0;
-        score = Math.max(0, score - 25); // خصم نقاط التدهور
+        score = Math.max(0, score - 25);
         playSound('penalty');
-        showToast('⚠️ انتبه! لقد مرّت 24 ساعة دون أي إنجاز، مستواك في تدهور والـ Streak انصفر!', '#ef4444');
+        triggerLiveBot('bad');
         lastActiveTime = now;
         localStorage.setItem('nexus_last_active', JSON.stringify(lastActiveTime));
         saveAndRender();
     }
 }
-setInterval(checkDailyStreakAndDeterioration, 60000); // التحقق كل دقيقة
+setInterval(checkDailyStreakAndDeterioration, 60000);
 checkDailyStreakAndDeterioration();
 
 streakText.textContent = `🔥 ${streak} يوم`;
@@ -129,8 +210,11 @@ function saveAndRender() {
     updateLeaderboard();
 }
 
+// تحديث الترتيب العالمي الحقيقي الخالي من الأسماء الوهمية
 function updateLeaderboard() {
-    const myIndex = leaderboardData.findIndex(item => item.me);
+    if (!myNickname) return;
+    
+    const myIndex = leaderboardData.findIndex(item => item.name.includes(myNickname) && item.me);
     if (myIndex !== -1) {
         leaderboardData[myIndex].score = score;
         leaderboardData[myIndex].name = myNickname + ' (أنت)';
@@ -143,6 +227,11 @@ function updateLeaderboard() {
 
     if(leaderboardList) {
         leaderboardList.innerHTML = '';
+        if (leaderboardData.length === 0 || (leaderboardData.length === 1 && leaderboardData[0].me && leaderboardData[0].score === 50 && tasks.length === 0)) {
+            leaderboardList.innerHTML = '<li style="font-size:12px; opacity:0.7; text-align:center; padding:10px;">لا توجد أسماء مسجلة بعد. كن أول المتصدرين!</li>';
+            return;
+        }
+
         leaderboardData.forEach((user, index) => {
             const li = document.createElement('li');
             li.className = `leaderboard-item ${user.me ? 'me' : ''}`;
@@ -186,6 +275,7 @@ function renderTasks(filterText = '') {
                     task.penalized = true;
                     score = Math.max(0, score - 10);
                     playSound('penalty');
+                    triggerLiveBot('bad');
                     showToast(`⚠️ فات موعد المهمة: "${task.text}"`, '#ef4444');
                 }
             }
@@ -195,13 +285,14 @@ function renderTasks(filterText = '') {
         taskInfo.className = 'task-info';
         taskInfo.addEventListener('click', () => {
             tasks[originalIndex].completed = !tasks[originalIndex].completed;
-            lastActiveTime = Date.now(); // تحديث توقيت آخر تفاعل
+            lastActiveTime = Date.now();
             localStorage.setItem('nexus_last_active', JSON.stringify(lastActiveTime));
 
             if (tasks[originalIndex].completed) {
                 score += 20;
-                streak += 1; // زيادة الـ Streak مع إنجاز المهمة
+                streak += 1;
                 playSound('complete');
+                triggerLiveBot('good');
                 showToast('تم إنجاز المهمة بنجاح! +20 ⭐ +1 يوم Streak');
             } else {
                 score = Math.max(0, score - 20);
@@ -334,6 +425,7 @@ setInterval(() => {
                 task.alerted = true;
                 needsUpdate = true;
                 playSound('alert');
+                triggerLiveBot('bad');
                 showToast(`⏰ انتهى وقت المهمة: "${task.text}"`, '#ef4444');
             }
         }
@@ -351,7 +443,7 @@ function updateTimerDisplay() {
 pomoStart.addEventListener('click', () => {
     if (!isRunning) {
         isRunning = true;
-        pomoStart.textContent = 'إيقاف موقت';
+        pomoStart.textContent = 'إيقاف مؤقت';
         pomoInterval = setInterval(() => {
             if (timeLeft > 0) {
                 timeLeft--;
@@ -360,6 +452,7 @@ pomoStart.addEventListener('click', () => {
                 clearInterval(pomoInterval);
                 playSound('complete');
                 score += 30;
+                triggerLiveBot('good');
                 showToast('🎉 انتهت جلسة التركيز بنجاح! +30 نقطة');
                 isRunning = false;
                 pomoStart.textContent = 'بدء التركيز';
@@ -381,7 +474,84 @@ pomoReset.addEventListener('click', () => {
     pomoStart.textContent = 'بدء التركيز';
 });
 
-// الأزرار التفاعلية والقب والأصدقاء والدليل المنبثق
+// إدارة واجهة تحدي الأصدقاء (1 vs 1) والطلبات الواردة
+function renderDuelRequests() {
+    if (!duelRequestsList) return;
+    duelRequestsList.innerHTML = '';
+
+    if (myDuelRequests.length === 0) {
+        duelRequestsList.innerHTML = '<li style="font-size:12px; opacity:0.7; text-align:center; padding:10px; background:transparent;">لا توجد طلبات تحدي حالياً.</li>';
+        return;
+    }
+
+    myDuelRequests.forEach((req, idx) => {
+        const li = document.createElement('li');
+        li.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:8px 10px; background:var(--input-bg); margin-bottom:6px; border-radius:8px; font-size:12px; border:1px solid var(--border-color);";
+        li.innerHTML = `
+            <span>⚔️ <strong>${req.sender}</strong> يتحداك لمدة 30 يوماً!</span>
+            <div style="display:flex; gap:5px;">
+                <button class="pomo-btn" style="background:#10b981; padding:3px 8px;" onclick="acceptDuel('${req.sender}')">قبول</button>
+                <button class="pomo-btn" style="background:#ef4444; padding:3px 8px;" onclick="rejectDuel(${idx})">رفض</button>
+            </div>
+        `;
+        duelRequestsList.appendChild(li);
+    });
+}
+
+window.acceptDuel = function(senderName) {
+    showToast(`لقد قبلت التحدي ضد ${senderName}! تبدأ معركة الـ 30 يوماً الآن ⚔️`);
+    activeDuels.push({ opponent: senderName, startTime: Date.now(), durationDays: 30 });
+    localStorage.setItem('nexus_active_duels', JSON.stringify(activeDuels));
+    myDuelRequests = myDuelRequests.filter(r => r.sender !== senderName);
+    localStorage.setItem('nexus_duel_requests', JSON.stringify(myDuelRequests));
+    renderDuelRequests();
+};
+
+window.rejectDuel = function(index) {
+    myDuelRequests.splice(index, 1);
+    localStorage.setItem('nexus_duel_requests', JSON.stringify(myDuelRequests));
+    renderDuelRequests();
+    showToast('تم رفض طلب التحدي.', '#ef4444');
+};
+
+if (openDuelModalBtn && duelModal) {
+    openDuelModalBtn.addEventListener('click', () => {
+        duelModal.classList.add('active');
+        renderDuelRequests();
+    });
+    closeDuelModal.addEventListener('click', () => duelModal.classList.remove('active'));
+}
+
+// إرسال دعوة تحدي لصديق حقيقي في التطبيق
+if (sendDuelRequestBtn && targetFriendInput) {
+    sendDuelRequestBtn.addEventListener('click', () => {
+        const friendName = targetFriendInput.value.trim();
+        if (!friendName) {
+            showToast('المرجو كتابة لقب الصديق بدقة!', '#f59e0b');
+            return;
+        }
+        if (friendName === myNickname) {
+            showToast('لا يمكنك تحدي نفسك!', '#ef4444');
+            return;
+        }
+
+        // البحث في القائمة العالمية واكتشاف ما إذا كان الصديق مسجلاً حقاً
+        const friendExists = leaderboardData.some(u => u.name.toLowerCase().includes(friendName.toLowerCase()));
+
+        if (friendExists) {
+            showToast(`🚀 تم إرسال دعوة التحدي بنجاح إلى "${friendName}"! انتظر قبوله.`);
+            targetFriendInput.value = '';
+            // محاكاة وصول الدعوة لطرف الصديق (أو حفظها في سجله)
+            let existingRequests = JSON.parse(localStorage.getItem('nexus_duel_requests')) || [];
+            existingRequests.push({ sender: myNickname });
+            localStorage.setItem('nexus_duel_requests', JSON.stringify(existingRequests));
+        } else {
+            showToast(`⚠️ الصديق "${friendName}" غير موجود في التطبيق أو لم يقم بتسجيل لقبه بعد!`, '#ef4444');
+        }
+    });
+}
+
+// قوالب المهام السريعة
 if(templateChips) {
     templateChips.forEach(chip => {
         chip.addEventListener('click', () => {
@@ -392,39 +562,12 @@ if(templateChips) {
     });
 }
 
-if(saveNicknameBtn) {
-    saveNicknameBtn.addEventListener('click', () => {
-        const name = nicknameInput.value.trim();
-        if (name) {
-            myNickname = name;
-            localStorage.setItem('nexus_nickname', myNickname);
-            showToast('تم حفظ اللقب بنجاح! 🏆');
-            updateLeaderboard();
-        } else {
-            showToast('الرجاء إدخال لقب صالح!', '#f59e0b');
-        }
-    });
-}
-
-if(addFriendBtn) {
-    addFriendBtn.addEventListener('click', () => {
-        const friendName = friendSearchInput.value.trim();
-        if (friendName) {
-            leaderboardData.push({ name: friendName + ' ⚔️', score: Math.floor(Math.random() * 150) + 50 });
-            friendSearchInput.value = '';
-            showToast(`تمت إضافة الصديق "${friendName}" للتحدي!`);
-            updateLeaderboard();
-        } else {
-            showToast('اكتب اسم الصديق أولاً!', '#f59e0b');
-        }
-    });
-}
-
 if(openGuideBtn && guideModal) {
     openGuideBtn.addEventListener('click', () => guideModal.classList.add('active'));
     closeGuideBtn.addEventListener('click', () => guideModal.classList.remove('active'));
     window.addEventListener('click', (e) => {
         if(e.target === guideModal) guideModal.classList.remove('active');
+        if(e.target === duelModal) duelModal.classList.remove('active');
     });
 }
 
@@ -462,3 +605,4 @@ themeToggle.addEventListener('click', () => {
 
 renderTasks();
 updateLeaderboard();
+renderDuelRequests();

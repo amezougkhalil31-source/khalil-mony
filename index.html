@@ -8,6 +8,25 @@
 </head>
 <body data-theme="light">
 
+    <!-- نافذة الترحيب الأولى (تظهر فقط أول مرة عند تحميل التطبيق) -->
+    <div id="welcomeModal" class="welcome-overlay">
+        <div class="welcome-card">
+            <h2>🚀 مرحباً بك في تطبيق Nexus Task!</h2>
+            <p>المرجو إدخال اللقب الذي سيظهر في لوحة المتصدرين العالمية:</p>
+            
+            <!-- خانة اللقب (إجبارية) -->
+            <input type="text" id="welcomeNickname" placeholder="مثلاً: بطل البرمجة 💻" required>
+
+            <!-- خانة الإيميل (اختيارية) + التوضيح تحتها -->
+            <div class="email-section">
+                <input type="email" id="welcomeEmail" placeholder="البريد الإلكتروني (اختياري)">
+                <small class="help-text">💡 إذا أدخلت بريدك الإلكتروني، ستتوصل برسالة ترحيبية فورية ورسائل تحفيزية دورية من البوت.</small>
+            </div>
+
+            <button id="startAppBtn" class="add-btn">دخول للتطبيق 🎯</button>
+        </div>
+    </div>
+
     <div class="app-layout">
         <!-- التطبيق الرئيسي -->
         <div class="container">
@@ -89,21 +108,37 @@
             </div>
         </div>
 
-        <!-- لوحة الأصدقاء والمنافسة الجانبية -->
+        <!-- لوحة الترتيب العالمي وتحدي الأصدقاء -->
         <div class="social-sidebar">
-            <h3>🏆 تحدي أصدقاء الإنتاجية</h3>
-            <div class="profile-box">
-                <input type="text" id="nicknameInput" placeholder="أدخل لقبك (مثال: Hero)...">
-                <button class="pomo-btn" id="saveNicknameBtn" style="padding: 10px;">حفظ</button>
-            </div>
-            <p style="font-size: 12px; opacity: 0.8; margin-bottom: 8px;">ترتيب الأبطال العالمي:</p>
+            <h3>🌍 الترتيب العالمي</h3>
+            <p style="font-size: 12px; opacity: 0.8; margin-bottom: 8px;">قائمة الأبطال الحقيقيين في التطبيق:</p>
             <ul class="leaderboard-list" id="leaderboardList">
-                <!-- يتم تعبئتها ديناميكياً -->
+                <!-- يتم تعبئتها ديناميكياً ولن تظهر أسماء وهمية -->
             </ul>
-            <div style="display: flex; gap: 8px;">
-                <input type="text" id="friendSearchInput" placeholder="ابحث عن صديق للمنافسة..." style="flex:1;">
-                <button class="pomo-btn" id="addFriendBtn">تنافس ⚔️</button>
+            
+            <!-- زر فتح واجهة تحدي الأصدقاء -->
+            <button class="add-btn" id="openDuelModalBtn" style="margin-top: 10px; background: #6366f1;">⚔️ تحدي الأصدقاء (1 vs 1)</button>
+        </div>
+    </div>
+
+    <!-- نافذة تحدي الأصدقاء المخصصة (1 vs 1 Duel Modal) -->
+    <div class="modal-overlay" id="duelModal">
+        <div class="modal-content">
+            <button class="close-modal" id="closeDuelModal">✕</button>
+            <h3 style="color: #4f46e5; margin-bottom: 10px;">⚔️ غرفة تحدي الأصدقاء (30 يوماً)</h3>
+            <p style="font-size: 13px; line-height: 1.6; margin-bottom: 15px;">
+                تحدَّ صديقك لمدة 30 يوماً! من يحقق أكبر عدد من النقاط والإنجازات سيفوز ويتصدر القائمة العالمية مع جائزة <strong>+50 نقطة ⭐</strong>.
+            </p>
+            
+            <div class="input-section" style="gap: 8px; margin-bottom: 15px;">
+                <input type="text" id="targetFriendInput" placeholder="اكتب لقب الصديق بدقة...">
+                <button class="add-btn" id="sendDuelRequestBtn">إرسال دعوة التحدي 🎯</button>
             </div>
+
+            <h4 style="font-size: 14px; margin-bottom: 8px; color: var(--text-color);">📩 طلبات التحدي الواردة:</h4>
+            <ul id="duelRequestsList" style="list-style: none; max-height: 150px; overflow-y: auto;">
+                <!-- طلبات التحدي الموجهة لك -->
+            </ul>
         </div>
     </div>
 
