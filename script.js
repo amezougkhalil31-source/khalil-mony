@@ -1,5 +1,5 @@
 // ==========================================
-// 1. تحديد كافة عناصر الـ DOM
+// 1. تحديد كافة عناصر الـ DOM (مع التحقق الأمن)
 // ==========================================
 const taskInput = document.getElementById('taskInput');
 const dateTimeInput = document.getElementById('dateTimeInput');
@@ -59,34 +59,38 @@ let timeLeft = 1500; // 25 minutes
 let isRunning = false;
 
 const STORAGE_KEY = 'nexus_tasks_master_db';
-let tasks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-let streak = JSON.parse(localStorage.getItem('nexus_streak')) || 0;
-let score = JSON.parse(localStorage.getItem('nexus_score')) || 50;
-let lastActiveTime = JSON.parse(localStorage.getItem('nexus_last_active')) || Date.now();
+let tasks = [];
+try {
+    tasks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+} catch (e) {
+    tasks = [];
+}
+
+let streak = Number(localStorage.getItem('nexus_streak')) || 0;
+let score = Number(localStorage.getItem('nexus_score')) || 50;
+let lastActiveTime = Number(localStorage.getItem('nexus_last_active')) || Date.now();
 let myNickname = localStorage.getItem('nexus_nickname') || '';
 let myEmail = localStorage.getItem('nexus_email') || '';
 let currentLang = localStorage.getItem('nexus_lang') || 'ar';
 
-let leaderboardData = JSON.parse(localStorage.getItem('nexus_leaderboard')) || [];
-let myDuelRequests = JSON.parse(localStorage.getItem('nexus_duel_requests')) || [];
-let activeDuels = JSON.parse(localStorage.getItem('nexus_active_duels')) || [];
+let leaderboardData = [];
+let myDuelRequests = [];
+let activeDuels = [];
 
-// ضبط المظهر واللغة الأولية
+try { leaderboardData = JSON.parse(localStorage.getItem('nexus_leaderboard')) || []; } catch(e) { leaderboardData = []; }
+try { myDuelRequests = JSON.parse(localStorage.getItem('nexus_duel_requests')) || []; } catch(e) { myDuelRequests = []; }
+try { activeDuels = JSON.parse(localStorage.getItem('nexus_active_duels')) || []; } catch(e) { activeDuels = []; }
+
+// ضبط المظهر الأولي
 const savedTheme = localStorage.getItem('nexus_theme') || 'light';
-body.setAttribute('data-theme', savedTheme);
+if (body) body.setAttribute('data-theme', savedTheme);
 if (themeToggle) themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
-
-if (langSelect) {
-    langSelect.value = currentLang;
-    applyLanguage(currentLang);
-}
 
 // ==========================================
 // 3. قاموس النصوص ودعم اللغات (i18n)
 // ==========================================
 const translations = {
     ar: {
-        appTitle: "🚀 Nexus Task - لوحة الإنجاز والإنتاجية",
         addBtnDefault: "إضافة مهمة جديدة",
         addBtnUpdate: "تحديث المهمة",
         emptyError: "الرجاء كتابة اسم المهمة!",
@@ -118,7 +122,6 @@ const translations = {
         you: "أنت"
     },
     en: {
-        appTitle: "🚀 Nexus Task - Productivity & Achievement Board",
         addBtnDefault: "Add New Task",
         addBtnUpdate: "Update Task",
         emptyError: "Please enter a task title!",
@@ -165,11 +168,17 @@ function applyLanguage(lang) {
     document.documentElement.setAttribute('dir', lang === 'en' ? 'ltr' : 'rtl');
     document.documentElement.setAttribute('lang', lang);
 
-    if (addBtn && editIndex === null) addBtn.textContent = t('addBtnDefault');
-    if (addBtn && editIndex !== null) addBtn.textContent = t('addBtnUpdate');
+    if (addBtn) {
+        addBtn.textContent = editIndex === null ? t('addBtnDefault') : t('addBtnUpdate');
+    }
     
     renderTasks(searchBox ? searchBox.value : '');
     updateLeaderboard();
+}
+
+if (langSelect) {
+    langSelect.value = currentLang;
+    langSelect.addEventListener('change', (e) => applyLanguage(e.target.value));
 }
 
 // ==========================================
@@ -205,9 +214,7 @@ function playSound(type) {
             osc.start();
             osc.stop(audioCtx.currentTime + 0.15);
         }
-    } catch (e) {
-        // تجاهل الأخطاء في البيئات غير المدعومة
-    }
+    } catch (e) {}
 }
 
 function showToast(message, color = '#10b981') {
@@ -221,18 +228,28 @@ function showToast(message, color = '#10b981') {
 }
 
 // ==========================================
-// 5. إعدادات التسجيل الأول (Onboarding & Email)
+// 5. إعدادات التسجيل الأول (Onboarding & Modal)
 // ==========================================
-if (myNickname) {
-    if (welcomeModal) welcomeModal.style.display = 'none';
-} else {
-    if (welcomeModal) welcomeModal.style.display = 'flex';
+function checkOnboarding() {
+    if (myNickname && myNickname.trim() !== '') {
+        if (welcomeModal) {
+            welcomeModal.style.display = 'none';
+            welcomeModal.classList.remove('active');
+        }
+    } else {
+        if (welcomeModal) {
+            welcomeModal.style.display = 'flex';
+            welcomeModal.classList.add('active');
+        }
+    }
 }
 
 if (startAppBtn) {
-    startAppBtn.addEventListener('click', () => {
-        const nickname = welcomeNickname.value.trim();
-        const email = welcomeEmail.value.trim();
+    startAppBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        
+        const nickname = welcomeNickname ? welcomeNickname.value.trim() : '';
+        const email = welcomeEmail ? welcomeEmail.value.trim() : '';
 
         if (!nickname) {
             showToast(t('enterNicknameReq'), '#f59e0b');
@@ -248,7 +265,11 @@ if (startAppBtn) {
             sendWelcomeEmail(myEmail, myNickname);
         }
 
-        if (welcomeModal) welcomeModal.style.display = 'none';
+        if (welcomeModal) {
+            welcomeModal.style.display = 'none';
+            welcomeModal.classList.remove('active');
+        }
+
         showToast(t('welcomeGreeting', { name: myNickname }));
         updateLeaderboard();
     });
@@ -263,11 +284,8 @@ function sendWelcomeEmail(email, nickname) {
 
     if (typeof emailjs !== 'undefined') {
         emailjs.send('default_service', 'template_welcome', templateParams, 'YOUR_PUBLIC_KEY')
-            .then(() => {
-                showToast(t('welcomeEmailMsg'));
-            }).catch(() => {});
-    } else {
-        console.log(`[Email System] Welcome email simulated for: ${email}`);
+            .then(() => { showToast(t('welcomeEmailMsg')); })
+            .catch(() => {});
     }
 }
 
@@ -310,20 +328,19 @@ function checkDailyStreakAndDeterioration() {
         playSound('penalty');
         triggerLiveBot('bad');
         lastActiveTime = now;
-        localStorage.setItem('nexus_last_active', JSON.stringify(lastActiveTime));
+        localStorage.setItem('nexus_last_active', String(lastActiveTime));
         saveAndRender();
     }
 }
 setInterval(checkDailyStreakAndDeterioration, 60000);
-checkDailyStreakAndDeterioration();
 
 // ==========================================
 // 7. الحفظ وعرض المهام ومتصدرين العالم
 // ==========================================
 function saveAndRender() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-    localStorage.setItem('nexus_score', JSON.stringify(score));
-    localStorage.setItem('nexus_streak', JSON.stringify(streak));
+    localStorage.setItem('nexus_score', String(score));
+    localStorage.setItem('nexus_streak', String(streak));
     renderTasks(searchBox ? searchBox.value : '');
     updateLeaderboard();
 }
@@ -373,9 +390,7 @@ function renderTasks(filterText = '') {
     const totalTasks = tasks.length;
     const now = new Date();
 
-    tasks.forEach(task => {
-        if (task.completed) completedCount++;
-    });
+    tasks.forEach(task => { if (task.completed) completedCount++; });
 
     const filteredTasks = tasks.filter(task => {
         const matchesSearch = task.text.toLowerCase().includes(filterText.toLowerCase());
@@ -414,7 +429,7 @@ function renderTasks(filterText = '') {
         taskInfo.addEventListener('click', () => {
             tasks[originalIndex].completed = !tasks[originalIndex].completed;
             lastActiveTime = Date.now();
-            localStorage.setItem('nexus_last_active', JSON.stringify(lastActiveTime));
+            localStorage.setItem('nexus_last_active', String(lastActiveTime));
 
             if (tasks[originalIndex].completed) {
                 score += 20;
@@ -444,7 +459,7 @@ function renderTasks(filterText = '') {
         const badge = document.createElement('span');
         badge.className = 'badge';
         badge.style.marginEnd = '6px';
-        badge.textContent = `📁 ${task.category}`;
+        badge.textContent = `📁 ${task.category || 'General'}`;
 
         const repeatBadge = document.createElement('span');
         repeatBadge.className = 'repeat-badge';
@@ -474,13 +489,13 @@ function renderTasks(filterText = '') {
         editBtn.textContent = t('editBtn');
         editBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            taskInput.value = task.text;
-            if (categorySelect) categorySelect.value = task.category;
-            if (repeatSelect) repeatSelect.value = task.repeat;
-            if (dateTimeInput) dateTimeInput.value = task.datetime;
+            if (taskInput) taskInput.value = task.text;
+            if (categorySelect) categorySelect.value = task.category || 'General';
+            if (repeatSelect) repeatSelect.value = task.repeat || 'None';
+            if (dateTimeInput) dateTimeInput.value = task.datetime || '';
             editIndex = originalIndex;
-            addBtn.textContent = t('addBtnUpdate');
-            taskInput.focus();
+            if (addBtn) addBtn.textContent = t('addBtnUpdate');
+            if (taskInput) taskInput.focus();
         });
 
         const deleteBtn = document.createElement('button');
@@ -518,6 +533,7 @@ function renderTasks(filterText = '') {
 // 8. إضافة وتحديث المهام والتنبيهات
 // ==========================================
 function addTask() {
+    if (!taskInput) return;
     const text = taskInput.value.trim();
     const category = categorySelect ? categorySelect.value : 'General';
     const repeat = repeatSelect ? repeatSelect.value : 'None';
@@ -732,7 +748,8 @@ if (sendDuelRequestBtn && targetFriendInput) {
         showToast(t('duelSent', { name: friendName }));
         targetFriendInput.value = '';
         
-        let existingRequests = JSON.parse(localStorage.getItem('nexus_duel_requests')) || [];
+        let existingRequests = [];
+        try { existingRequests = JSON.parse(localStorage.getItem('nexus_duel_requests')) || []; } catch(e) {}
         existingRequests.push({ sender: myNickname });
         localStorage.setItem('nexus_duel_requests', JSON.stringify(existingRequests));
     });
@@ -817,15 +834,11 @@ if (themeToggle) {
     });
 }
 
-if (langSelect) {
-    langSelect.addEventListener('change', (e) => {
-        applyLanguage(e.target.value);
-    });
-}
-
 // ==========================================
-// 12. التشغيل الأولي للتطبيق عند الفتح
+// 12. التشغيل الأولي المباشر والتأكيدي
 // ==========================================
-renderTasks();
-updateLeaderboard();
+applyLanguage(currentLang);
+checkOnboarding();
+checkDailyStreakAndDeterioration();
+saveAndRender();
 renderDuelRequests();
