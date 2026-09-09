@@ -10,6 +10,7 @@
     --primary-hover: #4338ca;
     --accent-color: #10b981;
     --danger-color: #ef4444;
+    --gold-color: #f59e0b;
 }
 
 [data-theme="dark"] {
@@ -41,7 +42,7 @@ body {
     transition: background 0.3s;
 }
 
-/* 1. نافذة التترحيب الأولى - Onboarding تغطي الشاشة بالكامل */
+/* 1. نافذة الترحيب الأولى - Onboarding تغطي الشاشة بالكامل */
 .welcome-overlay {
     position: fixed;
     top: 0;
@@ -201,6 +202,7 @@ body {
     cursor: pointer;
     font-size: 16px;
     transition: 0.2s;
+    position: relative;
 }
 
 .inbox-btn:hover, .guide-btn-icon:hover, .theme-btn:hover {
@@ -208,7 +210,7 @@ body {
 }
 
 .streak-badge {
-    background: #f59e0b;
+    background: var(--gold-color);
     color: white;
     padding: 6px 12px;
     border-radius: 10px;
@@ -356,11 +358,20 @@ input[type="text"], input[type="email"] {
     cursor: pointer;
     font-size: 14px;
     font-weight: bold;
-    transition: background 0.2s;
+    transition: background 0.2s, transform 0.1s;
 }
 
 .add-btn:hover {
     background: var(--primary-hover);
+}
+
+.add-btn:active {
+    transform: scale(0.98);
+}
+
+.add-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* شريط التقدم والإحصائيات */
@@ -472,6 +483,13 @@ ul#taskList li.completed {
     background: rgba(79, 70, 229, 0.08);
 }
 
+.rank-badge {
+    display: inline-block;
+    width: 24px;
+    text-align: center;
+    font-weight: bold;
+}
+
 /* 4. النوافذ المنبثقة (Modals) وقائمة الاقتراحات (Autocomplete) */
 .modal-overlay {
     position: fixed;
@@ -518,6 +536,11 @@ ul#taskList li.completed {
     border-radius: 50%;
     font-weight: bold;
     cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.close-modal:hover {
+    transform: scale(1.1);
 }
 
 [dir="ltr"] .close-modal {
@@ -551,6 +574,86 @@ ul#taskList li.completed {
 .autocomplete-item:hover {
     background: var(--input-bg);
     color: var(--primary-color);
+}
+
+/* 5. تصميم أشرطة المسارات الـ 5 لتحدي الأصدقاء */
+.column-card {
+    transition: border-color 0.2s, transform 0.2s, background-color 0.2s;
+}
+
+.column-card:hover {
+    border-color: var(--primary-color) !important;
+    transform: translateY(-2px);
+    background: var(--input-bg);
+}
+
+.column-card.selected {
+    border: 2px solid var(--primary-color) !important;
+    background: rgba(79, 70, 229, 0.1) !important;
+}
+
+/* 6. شاشة العد التنازلي الحماسي (3... 2... 1...) */
+#countdownBox {
+    animation: pulseCount 0.8s infinite alternate;
+}
+
+@keyframes pulseCount {
+    from { transform: scale(1); opacity: 0.8; }
+    to { transform: scale(1.25); opacity: 1; }
+}
+
+/* 7. تصميم ساحة التحدي المباشر والمهام التنافسية */
+.arena-task-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 13px;
+}
+
+.arena-task-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+/* 8. تصميم سجل المباريات والصندوق */
+.history-item, .request-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+
+.badge-win {
+    background: #d1fae5;
+    color: #065f46;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+.badge-loss {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+.badge-draw {
+    background: #e2e8f0;
+    color: #475569;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: bold;
 }
 
 /* الفوتر */

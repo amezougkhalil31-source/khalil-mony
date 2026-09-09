@@ -9,10 +9,12 @@ const addBtn = document.getElementById('addBtn');
 const taskList = document.getElementById('taskList');
 const statsText = document.getElementById('statsText');
 const scoreText = document.getElementById('scoreText');
+const levelText = document.getElementById('levelText');
 const progressBar = document.getElementById('progressBar');
 const themeToggle = document.getElementById('themeToggle');
 const clearAllBtn = document.getElementById('clearAllBtn');
 const searchBox = document.getElementById('searchBox');
+const categoryFilter = document.getElementById('categoryFilter');
 const streakText = document.getElementById('streakText');
 const toast = document.getElementById('toast');
 const langSelect = document.getElementById('langSelect');
@@ -50,9 +52,10 @@ const pomoReset = document.getElementById('pomoReset');
 // 2. المتغيرات العامة وحالة التطبيق
 // ==========================================
 let currentFilter = 'all';
+let currentCategoryFilter = 'all';
 let editIndex = null;
 let pomoInterval = null;
-let timeLeft = 1500;
+let timeLeft = 1500; // 25 minutes
 let isRunning = false;
 
 const STORAGE_KEY = 'nexus_tasks_master_db';
@@ -62,18 +65,115 @@ let score = JSON.parse(localStorage.getItem('nexus_score')) || 50;
 let lastActiveTime = JSON.parse(localStorage.getItem('nexus_last_active')) || Date.now();
 let myNickname = localStorage.getItem('nexus_nickname') || '';
 let myEmail = localStorage.getItem('nexus_email') || '';
+let currentLang = localStorage.getItem('nexus_lang') || 'ar';
 
 let leaderboardData = JSON.parse(localStorage.getItem('nexus_leaderboard')) || [];
 let myDuelRequests = JSON.parse(localStorage.getItem('nexus_duel_requests')) || [];
 let activeDuels = JSON.parse(localStorage.getItem('nexus_active_duels')) || [];
 
-// ضبط المظهر الأولي (Light/Dark Theme)
+// ضبط المظهر واللغة الأولية
 const savedTheme = localStorage.getItem('nexus_theme') || 'light';
 body.setAttribute('data-theme', savedTheme);
 if (themeToggle) themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
 
+if (langSelect) {
+    langSelect.value = currentLang;
+    applyLanguage(currentLang);
+}
+
 // ==========================================
-// 3. الصوتيات والمؤثرات البرمجية
+// 3. قاموس النصوص ودعم اللغات (i18n)
+// ==========================================
+const translations = {
+    ar: {
+        appTitle: "🚀 Nexus Task - لوحة الإنجاز والإنتاجية",
+        addBtnDefault: "إضافة مهمة جديدة",
+        addBtnUpdate: "تحديث المهمة",
+        emptyError: "الرجاء كتابة اسم المهمة!",
+        taskAdded: "تمت إضافة المهمة بنجاح!",
+        taskUpdated: "تم تحديث المهمة بنجاح!",
+        taskDeleted: "تم حذف المهمة",
+        allCleared: "تم مسح جميع المهام",
+        completeSuccess: "تم إنجاز المهمة بنجاح! +20 ⭐",
+        expiredAlert: "⚠️ انتهاء موعد:",
+        dueAlert: "⏰ حان موعد المهمة:",
+        focusSessionEnd: "🎉 انتهت جلسة التركيز! +30 نقطة",
+        startFocus: "بدء التركيز",
+        pauseFocus: "إيقاف مؤقت",
+        enterNicknameReq: "⚠️ المرجو إدخال اللقب للبدء والمنافسة في المتصدرين!",
+        welcomeGreeting: "أهلاً بك يا {name} في Nexus Task! 🚀",
+        welcomeEmailMsg: "📩 تم إرسال رسالة ترحيبية إلى بريدك الإلكتروني!",
+        noLeaderboard: "لا يوجد متصدرين بعد.",
+        noDuels: "لا توجد طلبات تحدي حالياً.",
+        duelAccepted: "قبِلت التحدي ضد {name}! بدأت المعركة ⚔️",
+        duelRejected: "تم رفض طلب التحدي.",
+        invalidFriend: "المرجو كتابة اسم الصديق بدقة!",
+        selfDuelError: "لا يمكنك تحدي نفسك!",
+        duelSent: "🚀 تم إرسال دعوة التحدي بنجاح إلى \"{name}\"!",
+        editBtn: "تعديل",
+        deleteBtn: "حذف",
+        completedText: "المكتملة",
+        scoreText: "النقاط",
+        levelText: "المستوى",
+        you: "أنت"
+    },
+    en: {
+        appTitle: "🚀 Nexus Task - Productivity & Achievement Board",
+        addBtnDefault: "Add New Task",
+        addBtnUpdate: "Update Task",
+        emptyError: "Please enter a task title!",
+        taskAdded: "Task added successfully!",
+        taskUpdated: "Task updated successfully!",
+        taskDeleted: "Task deleted",
+        allCleared: "All tasks cleared",
+        completeSuccess: "Task completed! +20 ⭐",
+        expiredAlert: "⚠️ Expired:",
+        dueAlert: "⏰ Task Due:",
+        focusSessionEnd: "🎉 Focus session finished! +30 points",
+        startFocus: "Start Focus",
+        pauseFocus: "Pause",
+        enterNicknameReq: "⚠️ Please enter a nickname to compete on the leaderboard!",
+        welcomeGreeting: "Welcome {name} to Nexus Task! 🚀",
+        welcomeEmailMsg: "📩 Welcome email sent to your inbox!",
+        noLeaderboard: "No leaderboard entries yet.",
+        noDuels: "No duel requests currently.",
+        duelAccepted: "Accepted duel against {name}! Battle started ⚔️",
+        duelRejected: "Duel request rejected.",
+        invalidFriend: "Please enter a valid friend nickname!",
+        selfDuelError: "You cannot challenge yourself!",
+        duelSent: "🚀 Duel invitation sent to \"{name}\"!",
+        editBtn: "Edit",
+        deleteBtn: "Delete",
+        completedText: "Completed",
+        scoreText: "Score",
+        levelText: "Level",
+        you: "You"
+    }
+};
+
+function t(key, params = {}) {
+    let text = (translations[currentLang] && translations[currentLang][key]) || key;
+    Object.keys(params).forEach(p => {
+        text = text.replace(`{${p}}`, params[p]);
+    });
+    return text;
+}
+
+function applyLanguage(lang) {
+    currentLang = lang;
+    localStorage.setItem('nexus_lang', lang);
+    document.documentElement.setAttribute('dir', lang === 'en' ? 'ltr' : 'rtl');
+    document.documentElement.setAttribute('lang', lang);
+
+    if (addBtn && editIndex === null) addBtn.textContent = t('addBtnDefault');
+    if (addBtn && editIndex !== null) addBtn.textContent = t('addBtnUpdate');
+    
+    renderTasks(searchBox ? searchBox.value : '');
+    updateLeaderboard();
+}
+
+// ==========================================
+// 4. الصوتيات والمؤثرات البرمجية
 // ==========================================
 function playSound(type) {
     try {
@@ -106,7 +206,7 @@ function playSound(type) {
             osc.stop(audioCtx.currentTime + 0.15);
         }
     } catch (e) {
-        // تجاهل أخطاء تشغيل الصوت في المتصفحات التي تحظر Autoplay
+        // تجاهل الأخطاء في البيئات غير المدعومة
     }
 }
 
@@ -121,7 +221,7 @@ function showToast(message, color = '#10b981') {
 }
 
 // ==========================================
-// 4. إعدادات التسجيل الأول (Onboarding & Email)
+// 5. إعدادات التسجيل الأول (Onboarding & Email)
 // ==========================================
 if (myNickname) {
     if (welcomeModal) welcomeModal.style.display = 'none';
@@ -135,7 +235,7 @@ if (startAppBtn) {
         const email = welcomeEmail.value.trim();
 
         if (!nickname) {
-            showToast('⚠️ المرجو إدخال اللقب للبدء والمنافسة في المتصدرين!', '#f59e0b');
+            showToast(t('enterNicknameReq'), '#f59e0b');
             return;
         }
 
@@ -149,7 +249,7 @@ if (startAppBtn) {
         }
 
         if (welcomeModal) welcomeModal.style.display = 'none';
-        showToast(`أهلاً بك يا ${myNickname} في Nexus Task! 🚀`);
+        showToast(t('welcomeGreeting', { name: myNickname }));
         updateLeaderboard();
     });
 }
@@ -164,7 +264,7 @@ function sendWelcomeEmail(email, nickname) {
     if (typeof emailjs !== 'undefined') {
         emailjs.send('default_service', 'template_welcome', templateParams, 'YOUR_PUBLIC_KEY')
             .then(() => {
-                showToast('📩 تم إرسال رسالة ترحيبية إلى بريدك الإلكتروني!');
+                showToast(t('welcomeEmailMsg'));
             }).catch(() => {});
     } else {
         console.log(`[Email System] Welcome email simulated for: ${email}`);
@@ -172,18 +272,26 @@ function sendWelcomeEmail(email, nickname) {
 }
 
 // ==========================================
-// 5. نظام التحفيز والتدهور اليومي (Streak)
+// 6. نظام التحفيز والتدهور اليومي (Streak)
 // ==========================================
 function triggerLiveBot(type) {
     if (type === 'good') {
-        const msgs = [
+        const msgs = currentLang === 'en' ? [
+            `🤖 Bot: Great job ${myNickname}! Keep it up! 🔥`,
+            `🤖 Bot: Excellent score increase! You're rising up 🚀`,
+            `🤖 Bot: Fantastic progress towards your goals! 🌟`
+        ] : [
             `🤖 البوت: برافو عليك يا ${myNickname}! أداء رائع، استمر هكذا! 🔥`,
             `🤖 البوت: إنجاز ممتاز! مستواك في تصاعد مستمر نحو القمة 🚀`,
             `🤖 البوت: خطوة رائعة نحو أهدافك اليوم! 🌟`
         ];
         showToast(msgs[Math.floor(Math.random() * msgs.length)], '#10b981');
     } else if (type === 'bad') {
-        const msgs = [
+        const msgs = currentLang === 'en' ? [
+            `🤖 Bot: Pay attention ${myNickname}! Hours pass with no progress ⚠️`,
+            `🤖 Bot: Procrastination reduces score! Finish a task now 💪`,
+            `🤖 Bot: Come back strong and don't break your streak! ⚡`
+        ] : [
             `🤖 البوت: انتبه يا ${myNickname}! تمر ساعات بدون إنجاز مهام ⚠️`,
             `🤖 البوت: التسويف يقلل نقاطك! أنجز مهمة الآن لتستعيد مستواك 💪`,
             `🤖 البوت: عُد بقوة ولا تدع الكسل يكسر الـ Streak! ⚡`
@@ -210,7 +318,7 @@ setInterval(checkDailyStreakAndDeterioration, 60000);
 checkDailyStreakAndDeterioration();
 
 // ==========================================
-// 6. الحفظ وعرض المهام ومتصدرين العالم
+// 7. الحفظ وعرض المهام ومتصدرين العالم
 // ==========================================
 function saveAndRender() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
@@ -220,15 +328,20 @@ function saveAndRender() {
     updateLeaderboard();
 }
 
+function calculateLevel(xp) {
+    return Math.floor(xp / 100) + 1;
+}
+
 function updateLeaderboard() {
     if (!myNickname) return;
     
-    const myIndex = leaderboardData.findIndex(item => item.name.includes(myNickname) && item.me);
+    const labelYou = `(${t('you')})`;
+    const myIndex = leaderboardData.findIndex(item => item.me || item.name.includes(myNickname));
     if (myIndex !== -1) {
         leaderboardData[myIndex].score = score;
-        leaderboardData[myIndex].name = `${myNickname} (أنت)`;
+        leaderboardData[myIndex].name = `${myNickname} ${labelYou}`;
     } else {
-        leaderboardData.push({ name: `${myNickname} (أنت)`, score: score, me: true });
+        leaderboardData.push({ name: `${myNickname} ${labelYou}`, score: score, me: true });
     }
 
     leaderboardData.sort((a, b) => b.score - a.score);
@@ -237,7 +350,7 @@ function updateLeaderboard() {
     if (leaderboardList) {
         leaderboardList.innerHTML = '';
         if (leaderboardData.length === 0) {
-            leaderboardList.innerHTML = '<li style="font-size:12px; opacity:0.7; text-align:center; padding:10px;">لا يوجد متصدرين بعد.</li>';
+            leaderboardList.innerHTML = `<li style="font-size:12px; opacity:0.7; text-align:center; padding:10px;">${t('noLeaderboard')}</li>`;
             return;
         }
 
@@ -266,9 +379,13 @@ function renderTasks(filterText = '') {
 
     const filteredTasks = tasks.filter(task => {
         const matchesSearch = task.text.toLowerCase().includes(filterText.toLowerCase());
-        if (currentFilter === 'active') return matchesSearch && !task.completed;
-        if (currentFilter === 'completed') return matchesSearch && task.completed;
-        return matchesSearch;
+        const matchesCategory = (currentCategoryFilter === 'all' || task.category === currentCategoryFilter);
+        
+        let matchesStatus = true;
+        if (currentFilter === 'active') matchesStatus = !task.completed;
+        if (currentFilter === 'completed') matchesStatus = task.completed;
+
+        return matchesSearch && matchesCategory && matchesStatus;
     });
 
     filteredTasks.forEach(task => {
@@ -285,7 +402,7 @@ function renderTasks(filterText = '') {
                     score = Math.max(0, score - 10);
                     playSound('penalty');
                     triggerLiveBot('bad');
-                    showToast(`⚠️ انتهاء موعد: "${task.text}"`, '#ef4444');
+                    showToast(`${t('expiredAlert')} "${task.text}"`, '#ef4444');
                 }
             }
         }
@@ -304,7 +421,7 @@ function renderTasks(filterText = '') {
                 streak += 1;
                 playSound('complete');
                 triggerLiveBot('good');
-                showToast('تم إنجاز المهمة بنجاح! +20 ⭐');
+                showToast(t('completeSuccess'));
             } else {
                 score = Math.max(0, score - 20);
                 streak = Math.max(0, streak - 1);
@@ -354,27 +471,27 @@ function renderTasks(filterText = '') {
         const editBtn = document.createElement('button');
         editBtn.className = 'edit-btn';
         editBtn.style.cssText = 'background:transparent; border:none; color:var(--primary-color); cursor:pointer; font-weight:bold; font-size:12px;';
-        editBtn.textContent = 'تعديل';
+        editBtn.textContent = t('editBtn');
         editBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             taskInput.value = task.text;
-            categorySelect.value = task.category;
-            repeatSelect.value = task.repeat;
-            dateTimeInput.value = task.datetime;
+            if (categorySelect) categorySelect.value = task.category;
+            if (repeatSelect) repeatSelect.value = task.repeat;
+            if (dateTimeInput) dateTimeInput.value = task.datetime;
             editIndex = originalIndex;
-            addBtn.textContent = 'تحديث المهمة';
+            addBtn.textContent = t('addBtnUpdate');
             taskInput.focus();
         });
 
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete-btn';
         deleteBtn.style.cssText = 'background:transparent; border:none; color:var(--danger-color); cursor:pointer; font-weight:bold; font-size:12px;';
-        deleteBtn.textContent = 'حذف';
+        deleteBtn.textContent = t('deleteBtn');
         deleteBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             tasks.splice(originalIndex, 1);
             playSound('delete');
-            showToast('تم حذف المهمة', '#ef4444');
+            showToast(t('taskDeleted'), '#ef4444');
             saveAndRender();
         });
 
@@ -386,9 +503,11 @@ function renderTasks(filterText = '') {
         taskList.appendChild(li);
     });
 
-    if (statsText) statsText.textContent = `المكتملة: ${completedCount} / ${totalTasks}`;
-    if (scoreText) scoreText.textContent = `النقاط: ${score} ⭐`;
-    if (streakText) streakText.textContent = `🔥 ${streak} يوم`;
+    if (statsText) statsText.textContent = `${t('completedText')}: ${completedCount} / ${totalTasks}`;
+    if (scoreText) scoreText.textContent = `${t('scoreText')}: ${score} ⭐`;
+    if (levelText) levelText.textContent = `${t('levelText')}: ${calculateLevel(score)} 🏅`;
+    if (streakText) streakText.textContent = `🔥 ${streak} ${currentLang === 'en' ? 'Days' : 'يوم'}`;
+    
     if (progressBar) {
         const progressPercent = totalTasks === 0 ? 0 : (completedCount / totalTasks) * 100;
         progressBar.style.width = `${progressPercent}%`;
@@ -396,7 +515,7 @@ function renderTasks(filterText = '') {
 }
 
 // ==========================================
-// 7. إضافة وتحديث المهام والتنبيهات
+// 8. إضافة وتحديث المهام والتنبيهات
 // ==========================================
 function addTask() {
     const text = taskInput.value.trim();
@@ -405,7 +524,7 @@ function addTask() {
     const datetime = dateTimeInput ? dateTimeInput.value : '';
 
     if (text === '') {
-        showToast('الرجاء كتابة اسم المهمة!', '#f59e0b');
+        showToast(t('emptyError'), '#f59e0b');
         return;
     }
 
@@ -420,8 +539,8 @@ function addTask() {
             penalized: false
         };
         editIndex = null;
-        if (addBtn) addBtn.textContent = 'إضافة مهمة جديدة';
-        showToast('تم تحديث المهمة بنجاح!');
+        if (addBtn) addBtn.textContent = t('addBtnDefault');
+        showToast(t('taskUpdated'));
     } else {
         tasks.push({ 
             text: text, 
@@ -432,7 +551,7 @@ function addTask() {
             alerted: false,
             penalized: false
         });
-        showToast('تمت إضافة المهمة بنجاح!');
+        showToast(t('taskAdded'));
     }
 
     taskInput.value = '';
@@ -454,7 +573,7 @@ setInterval(() => {
                 needsUpdate = true;
                 playSound('alert');
                 triggerLiveBot('bad');
-                showToast(`⏰ حان موعد المهمة: "${task.text}"`, '#ef4444');
+                showToast(`${t('dueAlert')} "${task.text}"`, '#ef4444');
             }
         }
     });
@@ -463,7 +582,7 @@ setInterval(() => {
 }, 1000);
 
 // ==========================================
-// 8. مؤقت البومودورو (Pomodoro)
+// 9. مؤقت البومودورو (Pomodoro)
 // ==========================================
 function updateTimerDisplay() {
     if (!pomoTimer) return;
@@ -476,7 +595,7 @@ if (pomoStart) {
     pomoStart.addEventListener('click', () => {
         if (!isRunning) {
             isRunning = true;
-            pomoStart.textContent = 'إيقاف مؤقت';
+            pomoStart.textContent = t('pauseFocus');
             pomoInterval = setInterval(() => {
                 if (timeLeft > 0) {
                     timeLeft--;
@@ -486,16 +605,16 @@ if (pomoStart) {
                     playSound('complete');
                     score += 30;
                     triggerLiveBot('good');
-                    showToast('🎉 انتهت جلسة التركيز! +30 نقطة');
+                    showToast(t('focusSessionEnd'));
                     isRunning = false;
-                    pomoStart.textContent = 'بدء التركيز';
+                    pomoStart.textContent = t('startFocus');
                     saveAndRender();
                 }
             }, 1000);
         } else {
             clearInterval(pomoInterval);
             isRunning = false;
-            pomoStart.textContent = 'بدء التركيز';
+            pomoStart.textContent = t('startFocus');
         }
     });
 }
@@ -506,19 +625,19 @@ if (pomoReset) {
         isRunning = false;
         timeLeft = 1500;
         updateTimerDisplay();
-        if (pomoStart) pomoStart.textContent = 'بدء التركيز';
+        if (pomoStart) pomoStart.textContent = t('startFocus');
     });
 }
 
 // ==========================================
-// 9. نظام التحديات 1v1 والبحث الذكي تلقائياً
+// 10. نظام التحديات 1v1 والبحث الذكي تلقائياً
 // ==========================================
 function renderDuelRequests() {
     if (!duelRequestsList) return;
     duelRequestsList.innerHTML = '';
 
     if (myDuelRequests.length === 0) {
-        duelRequestsList.innerHTML = '<li style="font-size:12px; opacity:0.7; text-align:center; padding:10px;">لا توجد طلبات تحدي حالياً.</li>';
+        duelRequestsList.innerHTML = `<li style="font-size:12px; opacity:0.7; text-align:center; padding:10px;">${t('noDuels')}</li>`;
         return;
     }
 
@@ -526,10 +645,10 @@ function renderDuelRequests() {
         const li = document.createElement('li');
         li.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:8px 10px; background:var(--input-bg); margin-bottom:6px; border-radius:8px; font-size:12px; border:1px solid var(--border-color);";
         li.innerHTML = `
-            <span>⚔️ <strong>${req.sender}</strong> يتحدى قدراتك لمدة 30 يوماً!</span>
+            <span>⚔️ <strong>${req.sender}</strong> ${currentLang === 'en' ? 'challenged you!' : 'يتحدى قدراتك لمدة 30 يوماً!'}</span>
             <div style="display:flex; gap:5px;">
-                <button class="pomo-btn" style="background:var(--accent-color); padding:3px 8px;" onclick="acceptDuel('${req.sender}')">قبول</button>
-                <button class="pomo-btn" style="background:var(--danger-color); padding:3px 8px;" onclick="rejectDuel(${idx})">رفض</button>
+                <button class="pomo-btn" style="background:var(--accent-color); padding:3px 8px;" onclick="acceptDuel('${req.sender}')">${currentLang === 'en' ? 'Accept' : 'قبول'}</button>
+                <button class="pomo-btn" style="background:var(--danger-color); padding:3px 8px;" onclick="rejectDuel(${idx})">${currentLang === 'en' ? 'Decline' : 'رفض'}</button>
             </div>
         `;
         duelRequestsList.appendChild(li);
@@ -537,7 +656,7 @@ function renderDuelRequests() {
 }
 
 window.acceptDuel = function(senderName) {
-    showToast(`قبِلت التحدي ضد ${senderName}! بدأت المعركة ⚔️`);
+    showToast(t('duelAccepted', { name: senderName }));
     activeDuels.push({ opponent: senderName, startTime: Date.now(), durationDays: 30 });
     localStorage.setItem('nexus_active_duels', JSON.stringify(activeDuels));
     myDuelRequests = myDuelRequests.filter(r => r.sender !== senderName);
@@ -549,7 +668,7 @@ window.rejectDuel = function(index) {
     myDuelRequests.splice(index, 1);
     localStorage.setItem('nexus_duel_requests', JSON.stringify(myDuelRequests));
     renderDuelRequests();
-    showToast('تم رفض طلب التحدي.', '#ef4444');
+    showToast(t('duelRejected'), '#ef4444');
 };
 
 if (openDuelModalBtn && duelModal) {
@@ -563,7 +682,6 @@ if (closeDuelModal && duelModal) {
     closeDuelModal.addEventListener('click', () => duelModal.classList.remove('active'));
 }
 
-// قائمة الاقتراحات التلقائية عند كتابة اسم الصديق
 if (targetFriendInput && friendAutocompleteList) {
     targetFriendInput.addEventListener('input', (e) => {
         const val = e.target.value.trim().toLowerCase();
@@ -577,7 +695,7 @@ if (targetFriendInput && friendAutocompleteList) {
         if (matches.length > 0) {
             friendAutocompleteList.style.display = 'block';
             matches.forEach(m => {
-                const cleanName = m.name.replace(' (أنت)', '');
+                const cleanName = m.name.replace(` (${t('you')})`, '').replace(' (أنت)', '');
                 const li = document.createElement('li');
                 li.className = 'autocomplete-item';
                 li.textContent = cleanName;
@@ -603,15 +721,15 @@ if (sendDuelRequestBtn && targetFriendInput) {
     sendDuelRequestBtn.addEventListener('click', () => {
         const friendName = targetFriendInput.value.trim();
         if (!friendName) {
-            showToast('المرجو كتابة اسم الصديق بدقة!', '#f59e0b');
+            showToast(t('invalidFriend'), '#f59e0b');
             return;
         }
         if (friendName === myNickname) {
-            showToast('لا يمكنك تحدي نفسك!', '#ef4444');
+            showToast(t('selfDuelError'), '#ef4444');
             return;
         }
 
-        showToast(`🚀 تم إرسال دعوة التحدي بنجاح إلى "${friendName}"!`);
+        showToast(t('duelSent', { name: friendName }));
         targetFriendInput.value = '';
         
         let existingRequests = JSON.parse(localStorage.getItem('nexus_duel_requests')) || [];
@@ -621,7 +739,7 @@ if (sendDuelRequestBtn && targetFriendInput) {
 }
 
 // ==========================================
-// 10. الاحداث والقوالب السريعة وتغيير اللغة
+// 11. الأحداث والقوالب السريعة والفلترة
 // ==========================================
 if (templateChips) {
     templateChips.forEach(chip => {
@@ -660,6 +778,13 @@ if (searchBox) {
     });
 }
 
+if (categoryFilter) {
+    categoryFilter.addEventListener('change', (e) => {
+        currentCategoryFilter = e.target.value;
+        renderTasks(searchBox ? searchBox.value : '');
+    });
+}
+
 filterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
         filterBtns.forEach(b => b.classList.remove('active'));
@@ -673,7 +798,7 @@ if (clearAllBtn) {
     clearAllBtn.addEventListener('click', () => {
         tasks = [];
         playSound('delete');
-        showToast('تم مسح جميع المهام', '#ef4444');
+        showToast(t('allCleared'), '#ef4444');
         saveAndRender();
     });
 }
@@ -692,22 +817,14 @@ if (themeToggle) {
     });
 }
 
-// دعم التحويل التلقائي للغة (العربية والإنجليزية)
 if (langSelect) {
     langSelect.addEventListener('change', (e) => {
-        const selectedLang = e.target.value;
-        if (selectedLang === 'en') {
-            document.documentElement.setAttribute('dir', 'ltr');
-            document.documentElement.setAttribute('lang', 'en');
-        } else {
-            document.documentElement.setAttribute('dir', 'rtl');
-            document.documentElement.setAttribute('lang', 'ar');
-        }
+        applyLanguage(e.target.value);
     });
 }
 
 // ==========================================
-// 11. التشغيل الأولي للتطبيق عند الفتح
+// 12. التشغيل الأولي للتطبيق عند الفتح
 // ==========================================
 renderTasks();
 updateLeaderboard();
