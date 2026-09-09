@@ -14,18 +14,20 @@
             <h2 id="welcTitle">🚀 مرحباً بك في تطبيق Nexus Task!</h2>
             <p id="welcSub">المرجو إدخال اللقب الذي سيظهر في لوحة المتصدرين العالمية:</p>
             
-            <input type="text" id="welcomeNickname" placeholder="مثلاً: بطل البرمجة 💻" required>
+            <form id="welcomeForm" onsubmit="return false;">
+                <input type="text" id="welcomeNickname" placeholder="مثلاً: بطل البرمجة 💻" required autocomplete="off">
 
-            <div class="email-section">
-                <input type="email" id="welcomeEmail" placeholder="البريد الإلكتروني (اختياري)">
-                <small class="help-text" id="welcHelp">💡 إذا أدخلت بريدك الإلكتروني، ستتوصل برسالة ترحيبية فورية ورسائل تحفيزية دورية.</small>
-            </div>
+                <div class="email-section">
+                    <input type="email" id="welcomeEmail" placeholder="البريد الإلكتروني (اختياري)" autocomplete="off">
+                    <small class="help-text" id="welcHelp">💡 إذا أدخلت بريدك الإلكتروني، ستتوصل برسالة ترحيبية فورية ورسائل تحفيزية دورية.</small>
+                </div>
 
-            <button id="startAppBtn" class="add-btn">دخول للتطبيق 🎯</button>
+                <button type="button" id="startAppBtn" class="add-btn">دخول للتطبيق 🎯</button>
+            </form>
         </div>
     </div>
 
-    <!-- الهيكل الرئيسي للتطبيق الممتد (عرض عصري مخصص للشاشات الواسعة) -->
+    <!-- الهيكل الرئيسي للتطبيق الممتد -->
     <div class="app-layout">
         <div class="container">
             <div id="toast">إشعار</div>
@@ -33,7 +35,6 @@
             <div class="header">
                 <h2>Nexus Task ⚡</h2>
                 <div class="header-right">
-                    <!-- زر تبديل اللغات الثلاث -->
                     <select id="langSelect" class="lang-select">
                         <option value="ar">العربية 🇸🇦</option>
                         <option value="en">English 🇬🇧</option>
@@ -117,16 +118,14 @@
         <div class="social-sidebar">
             <h3 id="lbTitle">🌍 الترتيب العالمي</h3>
             <p id="lbSub" style="font-size: 12px; opacity: 0.8; margin-bottom: 8px;">قائمة الأبطال الحقيقيين في التطبيق:</p>
-            <ul class="leaderboard-list" id="leaderboardList">
-                <!-- تعبئة ديناميكية فقط للمستخدمين الحقيقيين - تم حظر وإزالة جميع الأسماء الوهمية (Anti-Fake Users) -->
-            </ul>
+            <ul class="leaderboard-list" id="leaderboardList"></ul>
             
             <button class="add-btn" id="openDuelModalBtn" style="margin-top: 10px; background: #6366f1;">⚔️ تحدي الأصدقاء (1 vs 1)</button>
             <button class="add-btn" id="viewMatchHistoryBtn" style="margin-top: 5px; background: #475569; font-size: 12px;">📜 سجل المباريات (Match History)</button>
         </div>
     </div>
 
-    <!-- نافذة تحدي الأصدقاء والشروط والافتطاع -->
+    <!-- نافذة تحدي الأصدقاء -->
     <div class="modal-overlay" id="duelModal">
         <div class="modal-content">
             <button class="close-modal" id="closeDuelModal">✕</button>
@@ -145,7 +144,7 @@
         </div>
     </div>
 
-    <!-- نافذة اختيار المسار (5 أشرطة / Columns) للمنافسة -->
+    <!-- نافذة اختيار المسار (5 أشرطة) -->
     <div class="modal-overlay" id="columnSelectModal">
         <div class="modal-content" style="max-width: 600px;">
             <button class="close-modal" id="closeColumnSelectModal">✕</button>
@@ -178,7 +177,7 @@
         </div>
     </div>
 
-    <!-- شاشة المزامنة وشاشة العد التنازلي التنافسي (3... 2... 1...) -->
+    <!-- شاشة العد التنازلي التنافسي -->
     <div class="modal-overlay" id="countdownModal">
         <div class="modal-content" style="text-align: center;">
             <h3 id="waitingOpponentText">⏳ في انتظار اختيار الخصم لمساره...</h3>
@@ -187,7 +186,7 @@
         </div>
     </div>
 
-    <!-- نافذة ساحة التحدي المباشرة (Active Challenge Arena - 30 Days) -->
+    <!-- نافذة ساحة التحدي المباشرة -->
     <div class="modal-overlay" id="activeDuelArenaModal">
         <div class="modal-content" style="max-width: 650px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -205,34 +204,28 @@
                 🔄 يتم تفريغ علامات الإنجاز تلقائياً كل 24 ساعة للبدء في دورة جديدة مع احتفاظك بكامل نقاطك التراكمية!
             </p>
 
-            <div id="activeTasksContainer" style="max-height:220px; overflow-y:auto; margin-bottom:15px; border:1px solid #e2e8f0; padding:8px; border-radius:6px;">
-                <!-- تُعرض هنا مهام الشريط المختارة بالـ Checkboxes -->
-            </div>
+            <div id="activeTasksContainer" style="max-height:220px; overflow-y:auto; margin-bottom:15px; border:1px solid #e2e8f0; padding:8px; border-radius:6px;"></div>
 
             <button class="add-btn" id="forfeitDuelBtn" style="background:#ef4444;">🏳️ الانسحاب من التحدي (خسارة 50 نقطة)</button>
         </div>
     </div>
 
-    <!-- نافذة سجل المباريات (Match History) -->
+    <!-- نافذة سجل المباريات -->
     <div class="modal-overlay" id="matchHistoryModal">
         <div class="modal-content">
             <button class="close-modal" id="closeMatchHistoryModal">✕</button>
             <h3 id="historyModalTitle" style="color: #4f46e5; margin-bottom: 10px;">📜 سجل المباريات الأرشيفي</h3>
-            <ul id="historyList" style="list-style: none; max-height: 250px; overflow-y: auto; padding: 0;">
-                <!-- يتم ملؤها ديناميكياً بأرشيف التحديات السابقة -->
-            </ul>
+            <ul id="historyList" style="list-style: none; max-height: 250px; overflow-y: auto; padding: 0;"></ul>
         </div>
     </div>
 
-    <!-- نافذة صندوق الرسائل الواردة (Inbox Modal) المحدثة مع دعم التمرير وزر الإغلاق -->
+    <!-- نافذة صندوق الرسائل الواردة -->
     <div class="modal-overlay" id="inboxModal">
         <div class="modal-content">
             <button class="close-modal" id="closeInboxModal">✕</button>
             <h3 id="inboxModalTitle" style="color: #4f46e5; margin-bottom: 10px;">📩 صندوق الطلبات والرسائل</h3>
             <div id="inboxScrollContainer" style="max-height: 220px; overflow-y: auto; padding-right: 5px;">
-                <ul id="duelRequestsList" style="list-style: none; padding: 0; margin: 0;">
-                    <!-- طلبات التحدي الموجهة لك مع خياري قبول أو رفض -->
-                </ul>
+                <ul id="duelRequestsList" style="list-style: none; padding: 0; margin: 0;"></ul>
             </div>
         </div>
     </div>

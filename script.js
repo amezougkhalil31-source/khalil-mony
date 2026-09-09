@@ -1,844 +1,307 @@
-// ==========================================
-// 1. تحديد كافة عناصر الـ DOM (مع التحقق الأمن)
-// ==========================================
-const taskInput = document.getElementById('taskInput');
-const dateTimeInput = document.getElementById('dateTimeInput');
-const categorySelect = document.getElementById('categorySelect');
-const repeatSelect = document.getElementById('repeatSelect');
-const addBtn = document.getElementById('addBtn');
-const taskList = document.getElementById('taskList');
-const statsText = document.getElementById('statsText');
-const scoreText = document.getElementById('scoreText');
-const levelText = document.getElementById('levelText');
-const progressBar = document.getElementById('progressBar');
-const themeToggle = document.getElementById('themeToggle');
-const clearAllBtn = document.getElementById('clearAllBtn');
-const searchBox = document.getElementById('searchBox');
-const categoryFilter = document.getElementById('categoryFilter');
-const streakText = document.getElementById('streakText');
-const toast = document.getElementById('toast');
-const langSelect = document.getElementById('langSelect');
-const body = document.body;
-const filterBtns = document.querySelectorAll('.filter-btn');
+document.addEventListener('DOMContentLoaded', () => {
+    // ==========================================
+    // 1. العناصر والتحكم بالـ DOM
+    // ==========================================
+    const welcomeModal = document.getElementById('welcomeModal');
+    const welcomeNickname = document.getElementById('welcomeNickname');
+    const welcomeEmail = document.getElementById('welcomeEmail');
+    const startAppBtn = document.getElementById('startAppBtn');
+    const welcomeForm = document.getElementById('welcomeForm');
 
-// عناصر نافذة الترحيب الأولى (Onboarding)
-const welcomeModal = document.getElementById('welcomeModal');
-const welcomeNickname = document.getElementById('welcomeNickname');
-const welcomeEmail = document.getElementById('welcomeEmail');
-const startAppBtn = document.getElementById('startAppBtn');
+    const taskInput = document.getElementById('taskInput');
+    const dateTimeInput = document.getElementById('dateTimeInput');
+    const categorySelect = document.getElementById('categorySelect');
+    const repeatSelect = document.getElementById('repeatSelect');
+    const addBtn = document.getElementById('addBtn');
+    const taskList = document.getElementById('taskList');
+    const statsText = document.getElementById('statsText');
+    const scoreText = document.getElementById('scoreText');
+    const progressBar = document.getElementById('progressBar');
+    const streakText = document.getElementById('streakText');
+    const toast = document.getElementById('toast');
+    const searchBox = document.getElementById('searchBox');
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    const themeToggle = document.getElementById('themeToggle');
+    const langSelect = document.getElementById('langSelect');
+    const leaderboardList = document.getElementById('leaderboardList');
 
-// عناصر الدليل التعليمي وقوالب المهام
-const openGuideBtn = document.getElementById('openGuideBtn');
-const closeGuideBtn = document.getElementById('closeGuideBtn');
-const guideModal = document.getElementById('guideModal');
-const templateChips = document.querySelectorAll('.template-chip');
-const leaderboardList = document.getElementById('leaderboardList');
+    // النوافذ الإضافية
+    const openGuideBtn = document.getElementById('openGuideBtn');
+    const closeGuideBtn = document.getElementById('closeGuideBtn');
+    const guideModal = document.getElementById('guideModal');
 
-// عناصر تحدي الأصدقاء (1 vs 1)
-const openDuelModalBtn = document.getElementById('openDuelModalBtn');
-const closeDuelModal = document.getElementById('closeDuelModal');
-const duelModal = document.getElementById('duelModal');
-const targetFriendInput = document.getElementById('targetFriendInput');
-const sendDuelRequestBtn = document.getElementById('sendDuelRequestBtn');
-const duelRequestsList = document.getElementById('duelRequestsList');
-const friendAutocompleteList = document.getElementById('friendAutocompleteList');
+    const openInboxBtn = document.getElementById('openInboxBtn');
+    const closeInboxModal = document.getElementById('closeInboxModal');
+    const inboxModal = document.getElementById('inboxModal');
 
-// عناصر مؤقت البومودورو
-const pomoTimer = document.getElementById('pomoTimer');
-const pomoStart = document.getElementById('pomoStart');
-const pomoReset = document.getElementById('pomoReset');
+    const openDuelModalBtn = document.getElementById('openDuelModalBtn');
+    const closeDuelModal = document.getElementById('closeDuelModal');
+    const duelModal = document.getElementById('duelModal');
 
-// ==========================================
-// 2. المتغيرات العامة وحالة التطبيق
-// ==========================================
-let currentFilter = 'all';
-let currentCategoryFilter = 'all';
-let editIndex = null;
-let pomoInterval = null;
-let timeLeft = 1500; // 25 minutes
-let isRunning = false;
+    // ==========================================
+    // 2. حالة التطبيق والبيانات
+    // ==========================================
+    let tasks = JSON.parse(localStorage.getItem('nexus_tasks')) || [];
+    let score = Number(localStorage.getItem('nexus_score')) || 50;
+    let streak = Number(localStorage.getItem('nexus_streak')) || 0;
+    let nickname = localStorage.getItem('nexus_nickname') || '';
+    let email = localStorage.getItem('nexus_email') || '';
+    let currentFilter = 'all';
 
-const STORAGE_KEY = 'nexus_tasks_master_db';
-let tasks = [];
-try {
-    tasks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-} catch (e) {
-    tasks = [];
-}
-
-let streak = Number(localStorage.getItem('nexus_streak')) || 0;
-let score = Number(localStorage.getItem('nexus_score')) || 50;
-let lastActiveTime = Number(localStorage.getItem('nexus_last_active')) || Date.now();
-let myNickname = localStorage.getItem('nexus_nickname') || '';
-let myEmail = localStorage.getItem('nexus_email') || '';
-let currentLang = localStorage.getItem('nexus_lang') || 'ar';
-
-let leaderboardData = [];
-let myDuelRequests = [];
-let activeDuels = [];
-
-try { leaderboardData = JSON.parse(localStorage.getItem('nexus_leaderboard')) || []; } catch(e) { leaderboardData = []; }
-try { myDuelRequests = JSON.parse(localStorage.getItem('nexus_duel_requests')) || []; } catch(e) { myDuelRequests = []; }
-try { activeDuels = JSON.parse(localStorage.getItem('nexus_active_duels')) || []; } catch(e) { activeDuels = []; }
-
-// ضبط المظهر الأولي
-const savedTheme = localStorage.getItem('nexus_theme') || 'light';
-if (body) body.setAttribute('data-theme', savedTheme);
-if (themeToggle) themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
-
-// ==========================================
-// 3. قاموس النصوص ودعم اللغات (i18n)
-// ==========================================
-const translations = {
-    ar: {
-        addBtnDefault: "إضافة مهمة جديدة",
-        addBtnUpdate: "تحديث المهمة",
-        emptyError: "الرجاء كتابة اسم المهمة!",
-        taskAdded: "تمت إضافة المهمة بنجاح!",
-        taskUpdated: "تم تحديث المهمة بنجاح!",
-        taskDeleted: "تم حذف المهمة",
-        allCleared: "تم مسح جميع المهام",
-        completeSuccess: "تم إنجاز المهمة بنجاح! +20 ⭐",
-        expiredAlert: "⚠️ انتهاء موعد:",
-        dueAlert: "⏰ حان موعد المهمة:",
-        focusSessionEnd: "🎉 انتهت جلسة التركيز! +30 نقطة",
-        startFocus: "بدء التركيز",
-        pauseFocus: "إيقاف مؤقت",
-        enterNicknameReq: "⚠️ المرجو إدخال اللقب للبدء والمنافسة في المتصدرين!",
-        welcomeGreeting: "أهلاً بك يا {name} في Nexus Task! 🚀",
-        welcomeEmailMsg: "📩 تم إرسال رسالة ترحيبية إلى بريدك الإلكتروني!",
-        noLeaderboard: "لا يوجد متصدرين بعد.",
-        noDuels: "لا توجد طلبات تحدي حالياً.",
-        duelAccepted: "قبِلت التحدي ضد {name}! بدأت المعركة ⚔️",
-        duelRejected: "تم رفض طلب التحدي.",
-        invalidFriend: "المرجو كتابة اسم الصديق بدقة!",
-        selfDuelError: "لا يمكنك تحدي نفسك!",
-        duelSent: "🚀 تم إرسال دعوة التحدي بنجاح إلى \"{name}\"!",
-        editBtn: "تعديل",
-        deleteBtn: "حذف",
-        completedText: "المكتملة",
-        scoreText: "النقاط",
-        levelText: "المستوى",
-        you: "أنت"
-    },
-    en: {
-        addBtnDefault: "Add New Task",
-        addBtnUpdate: "Update Task",
-        emptyError: "Please enter a task title!",
-        taskAdded: "Task added successfully!",
-        taskUpdated: "Task updated successfully!",
-        taskDeleted: "Task deleted",
-        allCleared: "All tasks cleared",
-        completeSuccess: "Task completed! +20 ⭐",
-        expiredAlert: "⚠️ Expired:",
-        dueAlert: "⏰ Task Due:",
-        focusSessionEnd: "🎉 Focus session finished! +30 points",
-        startFocus: "Start Focus",
-        pauseFocus: "Pause",
-        enterNicknameReq: "⚠️ Please enter a nickname to compete on the leaderboard!",
-        welcomeGreeting: "Welcome {name} to Nexus Task! 🚀",
-        welcomeEmailMsg: "📩 Welcome email sent to your inbox!",
-        noLeaderboard: "No leaderboard entries yet.",
-        noDuels: "No duel requests currently.",
-        duelAccepted: "Accepted duel against {name}! Battle started ⚔️",
-        duelRejected: "Duel request rejected.",
-        invalidFriend: "Please enter a valid friend nickname!",
-        selfDuelError: "You cannot challenge yourself!",
-        duelSent: "🚀 Duel invitation sent to \"{name}\"!",
-        editBtn: "Edit",
-        deleteBtn: "Delete",
-        completedText: "Completed",
-        scoreText: "Score",
-        levelText: "Level",
-        you: "You"
-    }
-};
-
-function t(key, params = {}) {
-    let text = (translations[currentLang] && translations[currentLang][key]) || key;
-    Object.keys(params).forEach(p => {
-        text = text.replace(`{${p}}`, params[p]);
-    });
-    return text;
-}
-
-function applyLanguage(lang) {
-    currentLang = lang;
-    localStorage.setItem('nexus_lang', lang);
-    document.documentElement.setAttribute('dir', lang === 'en' ? 'ltr' : 'rtl');
-    document.documentElement.setAttribute('lang', lang);
-
-    if (addBtn) {
-        addBtn.textContent = editIndex === null ? t('addBtnDefault') : t('addBtnUpdate');
-    }
-    
-    renderTasks(searchBox ? searchBox.value : '');
-    updateLeaderboard();
-}
-
-if (langSelect) {
-    langSelect.value = currentLang;
-    langSelect.addEventListener('change', (e) => applyLanguage(e.target.value));
-}
-
-// ==========================================
-// 4. الصوتيات والمؤثرات البرمجية
-// ==========================================
-function playSound(type) {
-    try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        osc.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-
-        if (type === 'add') {
-            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
-            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.1);
-        } else if (type === 'complete' || type === 'alert') {
-            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.15);
-            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.15);
-        } else if (type === 'delete' || type === 'penalty') {
-            osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.15);
-            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.15);
-        }
-    } catch (e) {}
-}
-
-function showToast(message, color = '#10b981') {
-    if (!toast) return;
-    toast.textContent = message;
-    toast.style.background = color;
-    toast.classList.add('show');
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 3000);
-}
-
-// ==========================================
-// 5. إعدادات التسجيل الأول (Onboarding & Modal)
-// ==========================================
-function checkOnboarding() {
-    if (myNickname && myNickname.trim() !== '') {
+    // ==========================================
+    // 3. معالجة الدخول المباشر (Onboarding & Enter Key)
+    // ==========================================
+    function hideWelcomeModal() {
         if (welcomeModal) {
-            welcomeModal.style.display = 'none';
+            welcomeModal.style.setProperty('display', 'none', 'important');
             welcomeModal.classList.remove('active');
         }
-    } else {
+    }
+
+    function showWelcomeModal() {
         if (welcomeModal) {
-            welcomeModal.style.display = 'flex';
+            welcomeModal.style.setProperty('display', 'flex', 'important');
             welcomeModal.classList.add('active');
         }
     }
-}
 
-if (startAppBtn) {
-    startAppBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        
-        const nickname = welcomeNickname ? welcomeNickname.value.trim() : '';
-        const email = welcomeEmail ? welcomeEmail.value.trim() : '';
+    function checkUserStatus() {
+        if (nickname && nickname.trim() !== '') {
+            hideWelcomeModal();
+        } else {
+            showWelcomeModal();
+        }
+    }
 
-        if (!nickname) {
-            showToast(t('enterNicknameReq'), '#f59e0b');
-            return;
+    function handleAppLogin(e) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
         }
 
-        myNickname = nickname;
-        localStorage.setItem('nexus_nickname', myNickname);
+        const enteredName = welcomeNickname ? welcomeNickname.value.trim() : '';
+        const enteredEmail = welcomeEmail ? welcomeEmail.value.trim() : '';
 
-        if (email) {
-            myEmail = email;
-            localStorage.setItem('nexus_email', myEmail);
-            sendWelcomeEmail(myEmail, myNickname);
+        if (!enteredName) {
+            showToast('⚠️ المرجو كتابة اللقب للبدء!', '#f59e0b');
+            if (welcomeNickname) welcomeNickname.focus();
+            return false;
         }
 
-        if (welcomeModal) {
-            welcomeModal.style.display = 'none';
-            welcomeModal.classList.remove('active');
-        }
+        // حفظ الاسم والبريد
+        nickname = enteredName;
+        email = enteredEmail;
+        localStorage.setItem('nexus_nickname', nickname);
+        if (email) localStorage.setItem('nexus_email', email);
 
-        showToast(t('welcomeGreeting', { name: myNickname }));
+        // إخفاء الشاشة فوراً
+        hideWelcomeModal();
+
+        // التحديث والإشعار
+        showToast(`🚀 أهلاً بك يا ${nickname} في Nexus Task!`);
         updateLeaderboard();
+        renderTasks();
+        return false;
+    }
+
+    // ربط الزر والأحداث
+    if (startAppBtn) {
+        startAppBtn.addEventListener('click', handleAppLogin);
+    }
+
+    if (welcomeForm) {
+        welcomeForm.addEventListener('submit', handleAppLogin);
+    }
+
+    [welcomeNickname, welcomeEmail].forEach(input => {
+        if (input) {
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAppLogin(e);
+                }
+            });
+        }
     });
-}
 
-function sendWelcomeEmail(email, nickname) {
-    const templateParams = {
-        to_email: email,
-        to_name: nickname,
-        message: 'مرحباً بك في Nexus Task! تم تفعيل حسابك بنجاح للبدء في تنظيم أهدافك وتحدي أصدقائك.'
-    };
-
-    if (typeof emailjs !== 'undefined') {
-        emailjs.send('default_service', 'template_welcome', templateParams, 'YOUR_PUBLIC_KEY')
-            .then(() => { showToast(t('welcomeEmailMsg')); })
-            .catch(() => {});
-    }
-}
-
-// ==========================================
-// 6. نظام التحفيز والتدهور اليومي (Streak)
-// ==========================================
-function triggerLiveBot(type) {
-    if (type === 'good') {
-        const msgs = currentLang === 'en' ? [
-            `🤖 Bot: Great job ${myNickname}! Keep it up! 🔥`,
-            `🤖 Bot: Excellent score increase! You're rising up 🚀`,
-            `🤖 Bot: Fantastic progress towards your goals! 🌟`
-        ] : [
-            `🤖 البوت: برافو عليك يا ${myNickname}! أداء رائع، استمر هكذا! 🔥`,
-            `🤖 البوت: إنجاز ممتاز! مستواك في تصاعد مستمر نحو القمة 🚀`,
-            `🤖 البوت: خطوة رائعة نحو أهدافك اليوم! 🌟`
-        ];
-        showToast(msgs[Math.floor(Math.random() * msgs.length)], '#10b981');
-    } else if (type === 'bad') {
-        const msgs = currentLang === 'en' ? [
-            `🤖 Bot: Pay attention ${myNickname}! Hours pass with no progress ⚠️`,
-            `🤖 Bot: Procrastination reduces score! Finish a task now 💪`,
-            `🤖 Bot: Come back strong and don't break your streak! ⚡`
-        ] : [
-            `🤖 البوت: انتبه يا ${myNickname}! تمر ساعات بدون إنجاز مهام ⚠️`,
-            `🤖 البوت: التسويف يقلل نقاطك! أنجز مهمة الآن لتستعيد مستواك 💪`,
-            `🤖 البوت: عُد بقوة ولا تدع الكسل يكسر الـ Streak! ⚡`
-        ];
-        showToast(msgs[Math.floor(Math.random() * msgs.length)], '#ef4444');
-    }
-}
-
-function checkDailyStreakAndDeterioration() {
-    const now = Date.now();
-    const hoursPassed = (now - lastActiveTime) / (1000 * 60 * 60);
-
-    if (hoursPassed >= 24) {
-        streak = 0;
-        score = Math.max(0, score - 25);
-        playSound('penalty');
-        triggerLiveBot('bad');
-        lastActiveTime = now;
-        localStorage.setItem('nexus_last_active', String(lastActiveTime));
-        saveAndRender();
-    }
-}
-setInterval(checkDailyStreakAndDeterioration, 60000);
-
-// ==========================================
-// 7. الحفظ وعرض المهام ومتصدرين العالم
-// ==========================================
-function saveAndRender() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-    localStorage.setItem('nexus_score', String(score));
-    localStorage.setItem('nexus_streak', String(streak));
-    renderTasks(searchBox ? searchBox.value : '');
-    updateLeaderboard();
-}
-
-function calculateLevel(xp) {
-    return Math.floor(xp / 100) + 1;
-}
-
-function updateLeaderboard() {
-    if (!myNickname) return;
-    
-    const labelYou = `(${t('you')})`;
-    const myIndex = leaderboardData.findIndex(item => item.me || item.name.includes(myNickname));
-    if (myIndex !== -1) {
-        leaderboardData[myIndex].score = score;
-        leaderboardData[myIndex].name = `${myNickname} ${labelYou}`;
-    } else {
-        leaderboardData.push({ name: `${myNickname} ${labelYou}`, score: score, me: true });
+    // ==========================================
+    // 4. وظائف الإشعارات وإدارة المهام
+    // ==========================================
+    function showToast(msg, bg = '#10b981') {
+        if (!toast) return;
+        toast.textContent = msg;
+        toast.style.background = bg;
+        toast.style.display = 'block';
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+            toast.style.display = 'none';
+        }, 3000);
     }
 
-    leaderboardData.sort((a, b) => b.score - a.score);
-    localStorage.setItem('nexus_leaderboard', JSON.stringify(leaderboardData));
+    function saveState() {
+        localStorage.setItem('nexus_tasks', JSON.stringify(tasks));
+        localStorage.setItem('nexus_score', String(score));
+        localStorage.setItem('nexus_streak', String(streak));
+        updateLeaderboard();
+    }
 
-    if (leaderboardList) {
-        leaderboardList.innerHTML = '';
-        if (leaderboardData.length === 0) {
-            leaderboardList.innerHTML = `<li style="font-size:12px; opacity:0.7; text-align:center; padding:10px;">${t('noLeaderboard')}</li>`;
-            return;
+    function updateLeaderboard() {
+        if (!leaderboardList || !nickname) return;
+        let leaderboard = JSON.parse(localStorage.getItem('nexus_lb')) || [];
+        
+        const idx = leaderboard.findIndex(u => u.name === nickname);
+        if (idx !== -1) {
+            leaderboard[idx].score = score;
+        } else {
+            leaderboard.push({ name: nickname, score: score });
         }
 
-        leaderboardData.forEach((user, index) => {
+        leaderboard.sort((a, b) => b.score - a.score);
+        localStorage.setItem('nexus_lb', JSON.stringify(leaderboard));
+
+        leaderboardList.innerHTML = '';
+        leaderboard.forEach((item, i) => {
             const li = document.createElement('li');
-            li.className = `leaderboard-item ${user.me ? 'me' : ''}`;
-            li.innerHTML = `
-                <span>#${index + 1} ${user.name}</span>
-                <span style="font-weight:bold; color:var(--primary-color);">${user.score} ⭐</span>
-            `;
+            li.style.cssText = "display:flex; justify-content:space-between; padding:6px 10px; background:#f8fafc; margin-bottom:5px; border-radius:6px; font-size:12px;";
+            li.innerHTML = `<span>#${i + 1} ${item.name} ${item.name === nickname ? '(أنت)' : ''}</span> <strong>${item.score} ⭐</strong>`;
             leaderboardList.appendChild(li);
         });
     }
-}
 
-function renderTasks(filterText = '') {
-    if (!taskList) return;
-    taskList.innerHTML = '';
-    let completedCount = 0;
-    const totalTasks = tasks.length;
-    const now = new Date();
+    function renderTasks() {
+        if (!taskList) return;
+        taskList.innerHTML = '';
+        let completed = 0;
 
-    tasks.forEach(task => { if (task.completed) completedCount++; });
-
-    const filteredTasks = tasks.filter(task => {
-        const matchesSearch = task.text.toLowerCase().includes(filterText.toLowerCase());
-        const matchesCategory = (currentCategoryFilter === 'all' || task.category === currentCategoryFilter);
-        
-        let matchesStatus = true;
-        if (currentFilter === 'active') matchesStatus = !task.completed;
-        if (currentFilter === 'completed') matchesStatus = task.completed;
-
-        return matchesSearch && matchesCategory && matchesStatus;
-    });
-
-    filteredTasks.forEach(task => {
-        const originalIndex = tasks.indexOf(task);
-        const li = document.createElement('li');
-        if (task.completed) li.classList.add('completed');
-
-        if (task.datetime && !task.completed) {
-            const taskDate = new Date(task.datetime);
-            if (now > taskDate) {
-                li.classList.add('expired');
-                if (!task.penalized) {
-                    task.penalized = true;
-                    score = Math.max(0, score - 10);
-                    playSound('penalty');
-                    triggerLiveBot('bad');
-                    showToast(`${t('expiredAlert')} "${task.text}"`, '#ef4444');
-                }
-            }
-        }
-
-        const taskInfo = document.createElement('div');
-        taskInfo.className = 'task-info';
-        taskInfo.style.cursor = 'pointer';
-        taskInfo.style.flex = '1';
-        taskInfo.addEventListener('click', () => {
-            tasks[originalIndex].completed = !tasks[originalIndex].completed;
-            lastActiveTime = Date.now();
-            localStorage.setItem('nexus_last_active', String(lastActiveTime));
-
-            if (tasks[originalIndex].completed) {
-                score += 20;
-                streak += 1;
-                playSound('complete');
-                triggerLiveBot('good');
-                showToast(t('completeSuccess'));
-            } else {
-                score = Math.max(0, score - 20);
-                streak = Math.max(0, streak - 1);
-            }
-            saveAndRender();
+        const filtered = tasks.filter(t => {
+            const query = searchBox ? searchBox.value.toLowerCase() : '';
+            const matchesText = t.text.toLowerCase().includes(query);
+            if (currentFilter === 'active') return matchesText && !t.completed;
+            if (currentFilter === 'completed') return matchesText && t.completed;
+            return matchesText;
         });
 
-        const titleSpan = document.createElement('span');
-        titleSpan.className = 'task-title';
-        titleSpan.style.display = 'block';
-        titleSpan.style.fontWeight = 'bold';
-        titleSpan.textContent = task.text;
+        filtered.forEach((t, i) => {
+            if (t.completed) completed++;
+            const li = document.createElement('li');
+            li.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:8px 12px; margin-bottom:8px; background:#fff; border:1px solid #e2e8f0; border-radius:8px;";
+            if (t.completed) li.style.opacity = '0.6';
 
-        const detailsDiv = document.createElement('div');
-        detailsDiv.className = 'task-details';
-        detailsDiv.style.fontSize = '11px';
-        detailsDiv.style.opacity = '0.8';
-        detailsDiv.style.marginTop = '4px';
-        
-        const badge = document.createElement('span');
-        badge.className = 'badge';
-        badge.style.marginEnd = '6px';
-        badge.textContent = `📁 ${task.category || 'General'}`;
+            li.innerHTML = `
+                <div style="cursor:pointer; flex:1;" class="task-title-click">
+                    <span style="${t.completed ? 'text-decoration:line-through;' : ''} font-weight:bold;">${t.text}</span>
+                    <div style="font-size:10px; color:#64748b; margin-top:2px;">📁 ${t.category} | 🔁 ${t.repeat} ${t.datetime ? ' | ⏰ ' + t.datetime.replace('T', ' ') : ''}</div>
+                </div>
+                <button class="del-btn" style="background:none; border:none; color:#ef4444; cursor:pointer; font-weight:bold;">حذف</button>
+            `;
 
-        const repeatBadge = document.createElement('span');
-        repeatBadge.className = 'repeat-badge';
-        repeatBadge.style.marginEnd = '6px';
-        repeatBadge.textContent = `🔁 ${task.repeat}`;
-        
-        const dateSpan = document.createElement('span');
-        dateSpan.textContent = task.datetime ? `⏰ ${task.datetime.replace('T', ' ')}` : '';
-
-        detailsDiv.appendChild(badge);
-        if (task.repeat && task.repeat !== 'None' && task.repeat !== 'بدون تكرار') {
-            detailsDiv.appendChild(repeatBadge);
-        }
-        detailsDiv.appendChild(dateSpan);
-
-        taskInfo.appendChild(titleSpan);
-        taskInfo.appendChild(detailsDiv);
-
-        const actionsDiv = document.createElement('div');
-        actionsDiv.className = 'task-actions';
-        actionsDiv.style.display = 'flex';
-        actionsDiv.style.gap = '6px';
-
-        const editBtn = document.createElement('button');
-        editBtn.className = 'edit-btn';
-        editBtn.style.cssText = 'background:transparent; border:none; color:var(--primary-color); cursor:pointer; font-weight:bold; font-size:12px;';
-        editBtn.textContent = t('editBtn');
-        editBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (taskInput) taskInput.value = task.text;
-            if (categorySelect) categorySelect.value = task.category || 'General';
-            if (repeatSelect) repeatSelect.value = task.repeat || 'None';
-            if (dateTimeInput) dateTimeInput.value = task.datetime || '';
-            editIndex = originalIndex;
-            if (addBtn) addBtn.textContent = t('addBtnUpdate');
-            if (taskInput) taskInput.focus();
-        });
-
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'delete-btn';
-        deleteBtn.style.cssText = 'background:transparent; border:none; color:var(--danger-color); cursor:pointer; font-weight:bold; font-size:12px;';
-        deleteBtn.textContent = t('deleteBtn');
-        deleteBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            tasks.splice(originalIndex, 1);
-            playSound('delete');
-            showToast(t('taskDeleted'), '#ef4444');
-            saveAndRender();
-        });
-
-        actionsDiv.appendChild(editBtn);
-        actionsDiv.appendChild(deleteBtn);
-
-        li.appendChild(taskInfo);
-        li.appendChild(actionsDiv);
-        taskList.appendChild(li);
-    });
-
-    if (statsText) statsText.textContent = `${t('completedText')}: ${completedCount} / ${totalTasks}`;
-    if (scoreText) scoreText.textContent = `${t('scoreText')}: ${score} ⭐`;
-    if (levelText) levelText.textContent = `${t('levelText')}: ${calculateLevel(score)} 🏅`;
-    if (streakText) streakText.textContent = `🔥 ${streak} ${currentLang === 'en' ? 'Days' : 'يوم'}`;
-    
-    if (progressBar) {
-        const progressPercent = totalTasks === 0 ? 0 : (completedCount / totalTasks) * 100;
-        progressBar.style.width = `${progressPercent}%`;
-    }
-}
-
-// ==========================================
-// 8. إضافة وتحديث المهام والتنبيهات
-// ==========================================
-function addTask() {
-    if (!taskInput) return;
-    const text = taskInput.value.trim();
-    const category = categorySelect ? categorySelect.value : 'General';
-    const repeat = repeatSelect ? repeatSelect.value : 'None';
-    const datetime = dateTimeInput ? dateTimeInput.value : '';
-
-    if (text === '') {
-        showToast(t('emptyError'), '#f59e0b');
-        return;
-    }
-
-    if (editIndex !== null) {
-        tasks[editIndex] = { 
-            ...tasks[editIndex],
-            text: text, 
-            category: category, 
-            repeat: repeat, 
-            datetime: datetime, 
-            alerted: false,
-            penalized: false
-        };
-        editIndex = null;
-        if (addBtn) addBtn.textContent = t('addBtnDefault');
-        showToast(t('taskUpdated'));
-    } else {
-        tasks.push({ 
-            text: text, 
-            completed: false, 
-            category: category, 
-            repeat: repeat, 
-            datetime: datetime, 
-            alerted: false,
-            penalized: false
-        });
-        showToast(t('taskAdded'));
-    }
-
-    taskInput.value = '';
-    if (dateTimeInput) dateTimeInput.value = '';
-    taskInput.focus();
-    playSound('add');
-    saveAndRender();
-}
-
-setInterval(() => {
-    const now = new Date();
-    let needsUpdate = false;
-    
-    tasks.forEach(task => {
-        if (task.datetime && !task.completed && !task.alerted) {
-            const taskDate = new Date(task.datetime);
-            if (now.getTime() >= taskDate.getTime()) {
-                task.alerted = true;
-                needsUpdate = true;
-                playSound('alert');
-                triggerLiveBot('bad');
-                showToast(`${t('dueAlert')} "${task.text}"`, '#ef4444');
-            }
-        }
-    });
-
-    if (needsUpdate) saveAndRender();
-}, 1000);
-
-// ==========================================
-// 9. مؤقت البومودورو (Pomodoro)
-// ==========================================
-function updateTimerDisplay() {
-    if (!pomoTimer) return;
-    const minutes = Math.floor(timeLeft / 60);
-    const seconds = timeLeft % 60;
-    pomoTimer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-}
-
-if (pomoStart) {
-    pomoStart.addEventListener('click', () => {
-        if (!isRunning) {
-            isRunning = true;
-            pomoStart.textContent = t('pauseFocus');
-            pomoInterval = setInterval(() => {
-                if (timeLeft > 0) {
-                    timeLeft--;
-                    updateTimerDisplay();
+            li.querySelector('.task-title-click').addEventListener('click', () => {
+                t.completed = !t.completed;
+                if (t.completed) {
+                    score += 20;
+                    streak += 1;
+                    showToast('🎉 إنجاز ممتاز! +20 نقطة');
                 } else {
-                    clearInterval(pomoInterval);
-                    playSound('complete');
-                    score += 30;
-                    triggerLiveBot('good');
-                    showToast(t('focusSessionEnd'));
-                    isRunning = false;
-                    pomoStart.textContent = t('startFocus');
-                    saveAndRender();
+                    score = Math.max(0, score - 20);
                 }
-            }, 1000);
-        } else {
-            clearInterval(pomoInterval);
-            isRunning = false;
-            pomoStart.textContent = t('startFocus');
+                saveState();
+                renderTasks();
+            });
+
+            li.querySelector('.del-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                tasks.splice(i, 1);
+                saveState();
+                renderTasks();
+                showToast('🗑️ تم حذف المهمة', '#ef4444');
+            });
+
+            taskList.appendChild(li);
+        });
+
+        if (statsText) statsText.textContent = `المكتملة: ${completed} / ${tasks.length}`;
+        if (scoreText) scoreText.textContent = `النقاط: ${score} ⭐`;
+        if (streakText) streakText.textContent = `🔥 ${streak} يوم`;
+        if (progressBar) {
+            const pct = tasks.length === 0 ? 0 : (completed / tasks.length) * 100;
+            progressBar.style.width = `${pct}%`;
         }
-    });
-}
-
-if (pomoReset) {
-    pomoReset.addEventListener('click', () => {
-        clearInterval(pomoInterval);
-        isRunning = false;
-        timeLeft = 1500;
-        updateTimerDisplay();
-        if (pomoStart) pomoStart.textContent = t('startFocus');
-    });
-}
-
-// ==========================================
-// 10. نظام التحديات 1v1 والبحث الذكي تلقائياً
-// ==========================================
-function renderDuelRequests() {
-    if (!duelRequestsList) return;
-    duelRequestsList.innerHTML = '';
-
-    if (myDuelRequests.length === 0) {
-        duelRequestsList.innerHTML = `<li style="font-size:12px; opacity:0.7; text-align:center; padding:10px;">${t('noDuels')}</li>`;
-        return;
     }
 
-    myDuelRequests.forEach((req, idx) => {
-        const li = document.createElement('li');
-        li.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:8px 10px; background:var(--input-bg); margin-bottom:6px; border-radius:8px; font-size:12px; border:1px solid var(--border-color);";
-        li.innerHTML = `
-            <span>⚔️ <strong>${req.sender}</strong> ${currentLang === 'en' ? 'challenged you!' : 'يتحدى قدراتك لمدة 30 يوماً!'}</span>
-            <div style="display:flex; gap:5px;">
-                <button class="pomo-btn" style="background:var(--accent-color); padding:3px 8px;" onclick="acceptDuel('${req.sender}')">${currentLang === 'en' ? 'Accept' : 'قبول'}</button>
-                <button class="pomo-btn" style="background:var(--danger-color); padding:3px 8px;" onclick="rejectDuel(${idx})">${currentLang === 'en' ? 'Decline' : 'رفض'}</button>
-            </div>
-        `;
-        duelRequestsList.appendChild(li);
-    });
-}
-
-window.acceptDuel = function(senderName) {
-    showToast(t('duelAccepted', { name: senderName }));
-    activeDuels.push({ opponent: senderName, startTime: Date.now(), durationDays: 30 });
-    localStorage.setItem('nexus_active_duels', JSON.stringify(activeDuels));
-    myDuelRequests = myDuelRequests.filter(r => r.sender !== senderName);
-    localStorage.setItem('nexus_duel_requests', JSON.stringify(myDuelRequests));
-    renderDuelRequests();
-};
-
-window.rejectDuel = function(index) {
-    myDuelRequests.splice(index, 1);
-    localStorage.setItem('nexus_duel_requests', JSON.stringify(myDuelRequests));
-    renderDuelRequests();
-    showToast(t('duelRejected'), '#ef4444');
-};
-
-if (openDuelModalBtn && duelModal) {
-    openDuelModalBtn.addEventListener('click', () => {
-        duelModal.classList.add('active');
-        renderDuelRequests();
-    });
-}
-
-if (closeDuelModal && duelModal) {
-    closeDuelModal.addEventListener('click', () => duelModal.classList.remove('active'));
-}
-
-if (targetFriendInput && friendAutocompleteList) {
-    targetFriendInput.addEventListener('input', (e) => {
-        const val = e.target.value.trim().toLowerCase();
-        friendAutocompleteList.innerHTML = '';
-        if (!val) {
-            friendAutocompleteList.style.display = 'none';
-            return;
-        }
-
-        const matches = leaderboardData.filter(u => u.name.toLowerCase().includes(val) && !u.me);
-        if (matches.length > 0) {
-            friendAutocompleteList.style.display = 'block';
-            matches.forEach(m => {
-                const cleanName = m.name.replace(` (${t('you')})`, '').replace(' (أنت)', '');
-                const li = document.createElement('li');
-                li.className = 'autocomplete-item';
-                li.textContent = cleanName;
-                li.addEventListener('click', () => {
-                    targetFriendInput.value = cleanName;
-                    friendAutocompleteList.style.display = 'none';
-                });
-                friendAutocompleteList.appendChild(li);
+    if (addBtn) {
+        addBtn.addEventListener('click', () => {
+            const val = taskInput ? taskInput.value.trim() : '';
+            if (!val) {
+                showToast('⚠️ اكتب اسم المهمة أولاً!', '#f59e0b');
+                return;
+            }
+            tasks.push({
+                text: val,
+                category: categorySelect ? categorySelect.value : 'Personal',
+                repeat: repeatSelect ? repeatSelect.value : 'None',
+                datetime: dateTimeInput ? dateTimeInput.value : '',
+                completed: false
             });
-        } else {
-            friendAutocompleteList.style.display = 'none';
-        }
-    });
+            taskInput.value = '';
+            if (dateTimeInput) dateTimeInput.value = '';
+            saveState();
+            renderTasks();
+            showToast('✅ تمت إضافة المهمة بنجاح!');
+        });
+    }
 
-    document.addEventListener('click', (e) => {
-        if (e.target !== targetFriendInput) {
-            friendAutocompleteList.style.display = 'none';
-        }
-    });
-}
+    if (taskInput) {
+        taskInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') addBtn.click();
+        });
+    }
 
-if (sendDuelRequestBtn && targetFriendInput) {
-    sendDuelRequestBtn.addEventListener('click', () => {
-        const friendName = targetFriendInput.value.trim();
-        if (!friendName) {
-            showToast(t('invalidFriend'), '#f59e0b');
-            return;
-        }
-        if (friendName === myNickname) {
-            showToast(t('selfDuelError'), '#ef4444');
-            return;
-        }
-
-        showToast(t('duelSent', { name: friendName }));
-        targetFriendInput.value = '';
-        
-        let existingRequests = [];
-        try { existingRequests = JSON.parse(localStorage.getItem('nexus_duel_requests')) || []; } catch(e) {}
-        existingRequests.push({ sender: myNickname });
-        localStorage.setItem('nexus_duel_requests', JSON.stringify(existingRequests));
-    });
-}
-
-// ==========================================
-// 11. الأحداث والقوالب السريعة والفلترة
-// ==========================================
-if (templateChips) {
-    templateChips.forEach(chip => {
+    // القوالب السريعة
+    document.querySelectorAll('.template-chip').forEach(chip => {
         chip.addEventListener('click', () => {
             if (taskInput) {
-                taskInput.value = chip.getAttribute('data-task');
+                taskInput.value = chip.getAttribute('data-task-ar') || chip.textContent;
                 taskInput.focus();
             }
         });
     });
-}
 
-if (openGuideBtn && guideModal) {
-    openGuideBtn.addEventListener('click', () => guideModal.classList.add('active'));
-}
+    // الفلترة والبحث
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = btn.getAttribute('data-filter');
+            renderTasks();
+        });
+    });
 
-if (closeGuideBtn && guideModal) {
-    closeGuideBtn.addEventListener('click', () => guideModal.classList.remove('active'));
-}
+    if (searchBox) searchBox.addEventListener('input', renderTasks);
 
-window.addEventListener('click', (e) => {
-    if (guideModal && e.target === guideModal) guideModal.classList.remove('active');
-    if (duelModal && e.target === duelModal) duelModal.classList.remove('active');
+    if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', () => {
+            tasks = [];
+            saveState();
+            renderTasks();
+            showToast('🗑️ تم مسح جميع المهام', '#ef4444');
+        });
+    }
+
+    // المودالات
+    if (openGuideBtn && guideModal) openGuideBtn.addEventListener('click', () => guideModal.classList.add('active'));
+    if (closeGuideBtn && guideModal) closeGuideBtn.addEventListener('click', () => guideModal.classList.remove('active'));
+
+    if (openInboxBtn && inboxModal) openInboxBtn.addEventListener('click', () => inboxModal.classList.add('active'));
+    if (closeInboxModal && inboxModal) closeInboxModal.addEventListener('click', () => inboxModal.classList.remove('active'));
+
+    if (openDuelModalBtn && duelModal) openDuelModalBtn.addEventListener('click', () => duelModal.classList.add('active'));
+    if (closeDuelModal && duelModal) closeDuelModal.addEventListener('click', () => duelModal.classList.remove('active'));
+
+    // ==========================================
+    // 5. التشغيل والتحقق الأولي المباشر
+    // ==========================================
+    checkUserStatus();
+    renderTasks();
+    updateLeaderboard();
 });
-
-if (addBtn) addBtn.addEventListener('click', addTask);
-if (taskInput) {
-    taskInput.addEventListener('keypress', (e) => { 
-        if (e.key === 'Enter') addTask(); 
-    });
-}
-
-if (searchBox) {
-    searchBox.addEventListener('input', (e) => { 
-        renderTasks(e.target.value); 
-    });
-}
-
-if (categoryFilter) {
-    categoryFilter.addEventListener('change', (e) => {
-        currentCategoryFilter = e.target.value;
-        renderTasks(searchBox ? searchBox.value : '');
-    });
-}
-
-filterBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        filterBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentFilter = btn.getAttribute('data-filter');
-        renderTasks(searchBox ? searchBox.value : '');
-    });
-});
-
-if (clearAllBtn) {
-    clearAllBtn.addEventListener('click', () => {
-        tasks = [];
-        playSound('delete');
-        showToast(t('allCleared'), '#ef4444');
-        saveAndRender();
-    });
-}
-
-if (themeToggle) {
-    themeToggle.addEventListener('click', () => {
-        if (body.getAttribute('data-theme') === 'light') {
-            body.setAttribute('data-theme', 'dark');
-            themeToggle.textContent = '☀️';
-            localStorage.setItem('nexus_theme', 'dark');
-        } else {
-            body.setAttribute('data-theme', 'light');
-            themeToggle.textContent = '🌙';
-            localStorage.setItem('nexus_theme', 'light');
-        }
-    });
-}
-
-// ==========================================
-// 12. التشغيل الأولي المباشر والتأكيدي
-// ==========================================
-applyLanguage(currentLang);
-checkOnboarding();
-checkDailyStreakAndDeterioration();
-saveAndRender();
-renderDuelRequests();
