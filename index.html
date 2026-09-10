@@ -8,21 +8,21 @@
 </head>
 <body data-theme="light">
 
-    <!-- نافذة الترحيب الأولى -->
+    <!-- نافذة الترحيب والتسجيل الأولى -->
     <div id="welcomeModal" class="welcome-overlay">
         <div class="welcome-card">
             <h2 id="welcTitle">🚀 مرحباً بك في تطبيق Nexus Task!</h2>
-            <p id="welcSub">المرجو إدخال اللقب الذي سيظهر في لوحة المتصدرين العالمية:</p>
+            <p id="welcSub">المرجو إدخال اللقب والبريد الإلكتروني للإنضمام للائحة العالمية:</p>
             
             <form id="welcomeForm" onsubmit="event.preventDefault();">
                 <input type="text" id="welcomeNickname" placeholder="مثلاً: بطل البرمجة 💻" required autocomplete="off">
 
                 <div class="email-section">
-                    <input type="email" id="welcomeEmail" placeholder="البريد الإلكتروني (اختياري)" autocomplete="off">
-                    <small class="help-text" id="welcHelp">💡 إذا أدخلت بريدك الإلكتروني، ستتوصل برسالة ترحيبية فورية ورسائل تحفيزية دورية.</small>
+                    <input type="email" id="welcomeEmail" placeholder="البريد الإلكتروني" required autocomplete="off">
+                    <small class="help-text" id="welcHelp">💡 سيتم تسجيل حسابك في اللائحة العالمية لمنع تكرار اسمك.</small>
                 </div>
 
-                <button type="submit" id="startAppBtn" class="add-btn">دخول للتطبيق 🎯</button>
+                <button type="submit" id="startAppBtn" class="add-btn satisfied-btn">دخول للتطبيق 🎯</button>
             </form>
         </div>
     </div>
@@ -40,10 +40,11 @@
                         <option value="en">English 🇬🇧</option>
                         <option value="fr">Français 🇫🇷</option>
                     </select>
-                    <button class="inbox-btn" id="openInboxBtn" title="الرسائل والطلبات">📩</button>
-                    <button class="guide-btn-icon" id="openGuideBtn" title="دليل الإنتاجية">📖</button>
+                    <button class="inbox-btn satisfied-btn" id="openInboxBtn" title="الرسائل والطلبات">📩</button>
+                    <button class="guide-btn-icon satisfied-btn" id="openGuideBtn" title="دليل الإنتاجية">📖</button>
                     <span class="streak-badge" id="streakText">🔥 0 يوم</span>
-                    <button class="theme-btn" id="themeToggle" title="تغيير المظهر">🌙</button>
+                    <button class="theme-btn satisfied-btn" id="themeToggle" title="تغيير المظهر">🌙</button>
+                    <button class="logout-btn satisfied-btn" id="logoutBtn" title="تسجيل الخروج">🚪</button>
                 </div>
             </div>
 
@@ -51,8 +52,8 @@
             <div class="pomodoro-box">
                 <div class="pomodoro-time" id="pomoTimer">25:00</div>
                 <div class="pomodoro-btns">
-                    <button class="pomo-btn" id="pomoStart">بدء التركيز</button>
-                    <button class="pomo-btn reset" id="pomoReset">إعادة ضبط</button>
+                    <button class="pomo-btn satisfied-btn" id="pomoStart">بدء التركيز</button>
+                    <button class="pomo-btn reset satisfied-btn" id="pomoReset">إعادة ضبط</button>
                 </div>
             </div>
             
@@ -60,37 +61,37 @@
 
             <!-- قوالب المهام السريعة -->
             <div class="quick-templates">
-                <span id="quickReadyText" style="font-size:11px; align-self:center; font-weight:bold; opacity:0.7;">جاهز:</span>
-                <button class="template-chip" data-task-ar="رياضة صباحية 20 دقيقة" data-task-en="20 mins Morning Exercise" data-task-fr="20 mins Exercice Matinal" id="tmpl1">🏃‍♂️ رياضة</button>
-                <button class="template-chip" data-task-ar="قراءة 10 صفحات كتاب" data-task-en="Read 10 Book Pages" data-task-fr="Lire 10 Pages de Livre" id="tmpl2">📚 قراءة</button>
-                <button class="template-chip" data-task-ar="مراجعة دروس اليوم" data-task-en="Review Today's Lessons" data-task-fr="Réviser les Leçons" id="tmpl3">📝 مراجعة</button>
-                <button class="template-chip" data-task-ar="شرب لترين من الماء" data-task-en="Drink 2L Water" data-task-fr="Boire 2L d'Eau" id="tmpl4">💧 ماء</button>
+                <span id="quickReadyText" style="font-size:11px; align-self:center; font-weight:bold; opacity:0.8;">جاهز:</span>
+                <button class="template-chip satisfied-btn" data-task-ar="رياضة صباحية 20 دقيقة" data-task-en="20 mins Morning Exercise" data-task-fr="20 mins Exercice Matinal" id="tmpl1">🏃‍♂️ رياضة</button>
+                <button class="template-chip satisfied-btn" data-task-ar="قراءة 10 صفحات كتاب" data-task-en="Read 10 Book Pages" data-task-fr="Lire 10 Pages de Livre" id="tmpl2">📚 قراءة</button>
+                <button class="template-chip satisfied-btn" data-task-ar="مراجعة دروس اليوم" data-task-en="Review Today's Lessons" data-task-fr="Réviser les Leçons" id="tmpl3">📝 مراجعة</button>
+                <button class="template-chip satisfied-btn" data-task-ar="شرب لترين من الماء" data-task-en="Drink 2L Water" data-task-fr="Boire 2L d'Eau" id="tmpl4">💧 ماء</button>
             </div>
 
             <!-- أزرار التصفية -->
             <div class="filter-tabs">
-                <button class="filter-btn active" data-filter="all" id="filterAll">الكل</button>
-                <button class="filter-btn" data-filter="active" id="filterActive">النشطة</button>
-                <button class="filter-btn" data-filter="completed" id="filterCompleted">المكتملة</button>
+                <button class="filter-btn active satisfied-btn" data-filter="all" id="filterAll">الكل</button>
+                <button class="filter-btn satisfied-btn" data-filter="active" id="filterActive">النشطة</button>
+                <button class="filter-btn satisfied-btn" data-filter="completed" id="filterCompleted">المكتملة</button>
             </div>
 
             <!-- قسم إضافة مهمة جديدة -->
             <div class="input-section">
                 <input type="text" id="taskInput" placeholder="ما هي المهمة التي تريد إنجازها؟">
                 <div class="input-row">
-                    <select id="categorySelect">
+                    <select id="categorySelect" class="category-select">
                         <option value="Work" id="optWork">💼 العمل</option>
                         <option value="Study" id="optStudy">📚 الدراسة</option>
                         <option value="Personal" id="optPersonal">🎯 شخصي</option>
                     </select>
-                    <select id="repeatSelect">
+                    <select id="repeatSelect" class="repeat-select">
                         <option value="None" id="repNone">بدون تكرار</option>
                         <option value="Daily" id="repDaily">يومي</option>
                         <option value="Weekly" id="repWeekly">أسبوعي</option>
                     </select>
                 </div>
                 <input type="datetime-local" id="dateTimeInput">
-                <button class="add-btn" id="addBtn">إضافة مهمة مع تنبيه</button>
+                <button class="add-btn satisfied-btn" id="addBtn">إضافة مهمة مع تنبيه (+10 نقاط) 🚀</button>
             </div>
 
             <!-- شريط الإنجاز والإحصائيات -->
@@ -100,12 +101,12 @@
             
             <div class="stats">
                 <span id="statsText">المكتملة: 0 / 0</span>
-                <span id="scoreText">النقاط: 0 ⭐</span>
+                <span id="scoreText">النقاط: 0 ⭐ (+10 لكل مهمة)</span>
             </div>
 
             <ul id="taskList"></ul>
 
-            <button class="clear-all" id="clearAllBtn">مسح جميع المهام</button>
+            <button class="clear-all satisfied-btn" id="clearAllBtn">مسح جميع المهام</button>
 
             <!-- التذييل -->
             <div class="site-footer">
@@ -125,15 +126,27 @@
             <p id="lbSub" style="font-size: 12px; opacity: 0.8; margin-bottom: 8px;">قائمة الأبطال الحقيقيين في التطبيق:</p>
             <ul class="leaderboard-list" id="leaderboardList"></ul>
             
-            <button class="add-btn" id="openDuelModalBtn" style="margin-top: 10px; background: #6366f1;">⚔️ تحدي الأصدقاء (1 vs 1)</button>
-            <button class="add-btn" id="viewMatchHistoryBtn" style="margin-top: 5px; background: #475569; font-size: 12px;">📜 سجل المباريات (Match History)</button>
+            <button class="add-btn satisfied-btn" id="openDuelModalBtn" style="margin-top: 10px; background: linear-gradient(135deg, #6366f1, #4f46e5);">⚔️ تحدي الأصدقاء (1 vs 1)</button>
+            <button class="add-btn satisfied-btn" id="viewMatchHistoryBtn" style="margin-top: 5px; background: linear-gradient(135deg, #64748b, #475569); font-size: 12px;">📜 سجل المباريات (Match History)</button>
+        </div>
+    </div>
+
+    <!-- نافذة تأكيد الخروج -->
+    <div class="modal-overlay" id="logoutModal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <h3 id="logoutModalTitle" style="color: #ef4444; margin-bottom: 10px;">🚪 تأكيد الخروج</h3>
+            <p id="logoutModalText" style="font-size: 14px; margin-bottom: 20px;">هل أنت متأكد من أنك تريد الخروج من الحساب؟</p>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button class="add-btn satisfied-btn" id="confirmLogoutBtn" style="background: #ef4444; flex: 1;">نعم، خروج</button>
+                <button class="add-btn satisfied-btn" id="cancelLogoutBtn" style="background: #64748b; flex: 1;">إلغاء</button>
+            </div>
         </div>
     </div>
 
     <!-- نافذة تحدي الأصدقاء -->
     <div class="modal-overlay" id="duelModal">
         <div class="modal-content">
-            <button class="close-modal" id="closeDuelModal">✕</button>
+            <button class="close-modal satisfied-btn" id="closeDuelModal">✕</button>
             <h3 id="duelModalTitle" style="color: #4f46e5; margin-bottom: 10px;">⚔️ غرفة تحدي الأصدقاء (30 يوماً)</h3>
             <div style="background: rgba(99, 102, 241, 0.1); border-radius: 8px; padding: 10px; margin-bottom: 12px;">
                 <p id="duelRulesSummary" style="font-size: 12px; line-height: 1.5; color: #4338ca;">
@@ -144,7 +157,7 @@
             <div class="input-section" style="gap: 8px; margin-bottom: 15px; position:relative;">
                 <input type="text" id="targetFriendInput" placeholder="اكتب لقب الصديق بدقة..." autocomplete="off">
                 <ul id="autocompleteList" class="autocomplete-list"></ul>
-                <button class="add-btn" id="sendDuelRequestBtn">إرسال دعوة التحدي (قتطاع 50 نقطة) 🎯</button>
+                <button class="add-btn satisfied-btn" id="sendDuelRequestBtn">إرسال دعوة التحدي (قتطاع 50 نقطة) 🎯</button>
             </div>
         </div>
     </div>
@@ -152,33 +165,33 @@
     <!-- نافذة اختيار المسار -->
     <div class="modal-overlay" id="columnSelectModal">
         <div class="modal-content" style="max-width: 600px;">
-            <button class="close-modal" id="closeColumnSelectModal">✕</button>
+            <button class="close-modal satisfied-btn" id="closeColumnSelectModal">✕</button>
             <h3 id="colSelectTitle" style="color: #4f46e5; margin-bottom: 10px;">🎯 اختر مسار التحدي الخاص بك</h3>
             <p id="colSelectSub" style="font-size: 12px; margin-bottom: 15px;">اختر شريط المهام الذي ستلتزم به طوال الـ 30 يوماً ضد منافسك:</p>
             
             <div class="columns-grid" style="display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto;">
-                <div class="column-card" data-col="1" style="border:1px solid #cbd5e1; padding:10px; border-radius:8px; cursor:pointer;">
+                <div class="column-card satisfied-btn" data-col="1" style="border:1px solid #cbd5e1; padding:10px; border-radius:8px; cursor:pointer;">
                     <h4 id="col1Title">📌 الشريط 1: مسار التركيز والإنتاجية (البومودورو)</h4>
                     <p id="col1Desc" style="font-size:11px; color:#64748b;">يحتوي على 8 مهام مخصصة لجلسات التركيز العميق وإدارة الوقت.</p>
                 </div>
-                <div class="column-card" data-col="2" style="border:1px solid #cbd5e1; padding:10px; border-radius:8px; cursor:pointer;">
+                <div class="column-card satisfied-btn" data-col="2" style="border:1px solid #cbd5e1; padding:10px; border-radius:8px; cursor:pointer;">
                     <h4 id="col2Title">📌 الشريط 2: مسار الانضباط والالتزام اليومي</h4>
                     <p id="col2Desc" style="font-size:11px; color:#64748b;">يحتوي على 9 مهام تبني الانضباط الحديدي والاستيقاظ والالتزام.</p>
                 </div>
-                <div class="column-card" data-col="3" style="border:1px solid #cbd5e1; padding:10px; border-radius:8px; cursor:pointer;">
+                <div class="column-card satisfied-btn" data-col="3" style="border:1px solid #cbd5e1; padding:10px; border-radius:8px; cursor:pointer;">
                     <h4 id="col3Title">📌 الشريط 3: مسار التحديات السريعة</h4>
                     <p id="col3Desc" style="font-size:11px; color:#64748b;">يحتوي على 7 مهام خاطفة وقوية لإنجازها في وقت قياسي.</p>
                 </div>
-                <div class="column-card" data-col="4" style="border:1px solid #cbd5e1; padding:10px; border-radius:8px; cursor:pointer;">
+                <div class="column-card satisfied-btn" data-col="4" style="border:1px solid #cbd5e1; padding:10px; border-radius:8px; cursor:pointer;">
                     <h4 id="col4Title">📌 الشريط 4: مسار بناء العادات والتطوير الذاتي</h4>
                     <p id="col4Desc" style="font-size:11px; color:#64748b;">يحتوي على 10 مهام لترسيخ العادات الإيجابية والقراءة والرياضة.</p>
                 </div>
-                <div class="column-card" data-col="5" style="border:1px solid #cbd5e1; padding:10px; border-radius:8px; cursor:pointer;">
+                <div class="column-card satisfied-btn" data-col="5" style="border:1px solid #cbd5e1; padding:10px; border-radius:8px; cursor:pointer;">
                     <h4 id="col5Title">📌 الشريط 5: المسار الشامل والمتنوع</h4>
                     <p id="col5Desc" style="font-size:11px; color:#64748b;">مزج متوازن لجميع أنواع المهام للياقة، العمل، والتطوير.</p>
                 </div>
             </div>
-            <button class="add-btn" id="confirmColumnBtn" style="margin-top:15px;" disabled>تأكيد اختيار المسار 🚀</button>
+            <button class="add-btn satisfied-btn" id="confirmColumnBtn" style="margin-top:15px;" disabled>تأكيد اختيار المسار 🚀</button>
         </div>
     </div>
 
@@ -196,7 +209,7 @@
         <div class="modal-content" style="max-width: 650px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <h3 id="arenaTitle" style="color:#4f46e5;">⚔️ ساحة التحدي المباشر (30 يوماً)</h3>
-                <button class="close-modal" id="closeArenaModal">✕</button>
+                <button class="close-modal satisfied-btn" id="closeArenaModal">✕</button>
             </div>
             
             <div style="background:#f1f5f9; padding:10px; border-radius:8px; display:flex; justify-content:space-between; margin-bottom:12px; font-size:12px;">
@@ -211,23 +224,25 @@
 
             <div id="activeTasksContainer" style="max-height:220px; overflow-y:auto; margin-bottom:15px; border:1px solid #e2e8f0; padding:8px; border-radius:6px;"></div>
 
-            <button class="add-btn" id="forfeitDuelBtn" style="background:#ef4444;">🏳️ الانسحاب من التحدي (خسارة 50 نقطة)</button>
+            <button class="add-btn satisfied-btn" id="forfeitDuelBtn" style="background:#ef4444;">🏳️ الانسحاب من التحدي (خسارة 50 نقطة)</button>
         </div>
     </div>
 
     <!-- نافذة سجل المباريات -->
     <div class="modal-overlay" id="matchHistoryModal">
         <div class="modal-content">
-            <button class="close-modal" id="closeMatchHistoryModal">✕</button>
+            <button class="close-modal satisfied-btn" id="closeMatchHistoryModal">✕</button>
             <h3 id="historyModalTitle" style="color: #4f46e5; margin-bottom: 10px;">📜 سجل المباريات الأرشيفي</h3>
-            <ul id="historyList" style="list-style: none; max-height: 250px; overflow-y: auto; padding: 0;"></ul>
+            <div id="historyListContainer" style="max-height: 250px; overflow-y: auto;">
+                <ul id="historyList" style="list-style: none; padding: 0;"></ul>
+            </div>
         </div>
     </div>
 
-    <!-- نافذة صندوق الرسائل الواردة -->
+    <!-- نافذة صندوق الرسائل الواردة (الظرف) -->
     <div class="modal-overlay" id="inboxModal">
         <div class="modal-content">
-            <button class="close-modal" id="closeInboxModal">✕</button>
+            <button class="close-modal satisfied-btn" id="closeInboxModal">✕</button>
             <h3 id="inboxModalTitle" style="color: #4f46e5; margin-bottom: 10px;">📩 صندوق الطلبات والرسائل</h3>
             <div id="inboxScrollContainer" style="max-height: 220px; overflow-y: auto; padding-right: 5px;">
                 <ul id="duelRequestsList" style="list-style: none; padding: 0; margin: 0;"></ul>
@@ -238,14 +253,14 @@
     <!-- نافذة دليل الإنتاجية -->
     <div class="modal-overlay" id="guideModal">
         <div class="modal-content">
-            <button class="close-modal" id="closeGuideBtn">✕</button>
+            <button class="close-modal satisfied-btn" id="closeGuideBtn">✕</button>
             <h3 id="guideTitle" style="color: #4f46e5; margin-bottom: 10px;">📖 دليل زيادة الإنتاجية وتنظيم الوقت</h3>
             <p id="guideDesc1" style="font-size: 13px; line-height: 1.6; margin-bottom: 10px;">
                 تطبيق <strong>Nexus Task</strong> هو أداة متكاملة صُممت لتنظيم وقتك والحد من التسويف عبر استراتيجيات عالمية:
             </p>
             <ul style="font-size: 13px; line-height: 1.6; padding-right: 18px; margin-bottom: 15px;">
                 <li id="guideTip1"><strong>تقنية بومودورو:</strong> تقسيم العمل لجلسات تركيز 25 دقيقة لتجنب التشتت.</li>
-                <li id="guideTip2"><strong>الالتزام اليومي (Streak):</strong> أنجز ولو مهمة واحدة كل 24 ساعة لرفع نقاطك.</li>
+                <li id="guideTip2"><strong>الالتزام اليومي (Streak):</strong> أنجز ولو مهمة واحدة كل 24 ساعة لرفع نقاطك (+10 لكل مهمة).</li>
             </ul>
         </div>
     </div>

@@ -409,7 +409,7 @@ input[type="text"], input[type="email"] {
     opacity: 0.85;
 }
 
-/* قائمة المهام */
+/* قائمة المهام وتصميم العناصر */
 ul#taskList {
     list-style: none;
     max-height: 260px;
@@ -445,6 +445,37 @@ ul#taskList li.completed {
 
 [dir="ltr"] ul#taskList li.completed {
     border-left-color: var(--accent-color);
+}
+
+.task-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.task-date {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.task-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.task-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    padding: 4px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.task-btn:hover {
+    background: rgba(0, 0, 0, 0.08);
 }
 
 .clear-all {
