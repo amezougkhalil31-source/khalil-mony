@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const pomoReset = document.getElementById('pomoReset');
 
     // ==========================================
-    // 2. المتغيرات العامة وحالة التطبيق
+    // 2. المتغيرات العامة وحالة التطبيق (مع قراءة آمنة)
     // ==========================================
     let currentFilter = 'all';
     let currentCategoryFilter = 'all';
@@ -64,13 +64,17 @@ document.addEventListener('DOMContentLoaded', () => {
     let isRunning = false;
 
     const STORAGE_KEY = 'nexus_tasks_master_db';
-    let tasks = [];
-    try {
-        tasks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    } catch (e) {
-        tasks = [];
+
+    function safeJSONParse(key, fallback) {
+        try {
+            const item = localStorage.getItem(key);
+            return item ? JSON.parse(item) : fallback;
+        } catch (e) {
+            return fallback;
+        }
     }
 
+    let tasks = safeJSONParse(STORAGE_KEY, []);
     let streak = Number(localStorage.getItem('nexus_streak')) || 0;
     let score = Number(localStorage.getItem('nexus_score')) || 50;
     let lastActiveTime = Number(localStorage.getItem('nexus_last_active')) || Date.now();
@@ -78,13 +82,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let myEmail = localStorage.getItem('nexus_email') || '';
     let currentLang = localStorage.getItem('nexus_lang') || 'ar';
 
-    let leaderboardData = [];
-    let myDuelRequests = [];
-    let activeDuels = [];
-
-    try { leaderboardData = JSON.parse(localStorage.getItem('nexus_leaderboard')) || []; } catch(e) { leaderboardData = []; }
-    try { myDuelRequests = JSON.parse(localStorage.getItem('nexus_duel_requests')) || []; } catch(e) { myDuelRequests = []; }
-    try { activeDuels = JSON.parse(localStorage.getItem('nexus_active_duels')) || []; } catch(e) { activeDuels = []; }
+    let leaderboardData = safeJSONParse('nexus_leaderboard', []);
+    let myDuelRequests = safeJSONParse('nexus_duel_requests', []);
+    let activeDuels = safeJSONParse('nexus_active_duels', []);
 
     // ضبط المظهر الأولي
     const savedTheme = localStorage.getItem('nexus_theme') || 'light';
@@ -183,8 +183,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function applyLanguage(lang) {
         currentLang = lang;
         localStorage.setItem('nexus_lang', lang);
-        document.documentElement.setAttribute('dir', lang === 'en' ? 'ltr' : 'rtl');
-        document.documentElement.setAttribute('lang', lang);
+        if (document.documentElement) {
+            document.documentElement.setAttribute('dir', lang === 'en' ? 'ltr' : 'rtl');
+            document.documentElement.setAttribute('lang', lang);
+        }
 
         if (addBtn) {
             addBtn.textContent = editIndex === null ? t('addBtnDefault') : t('addBtnUpdate');
@@ -203,7 +205,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     function playSound(type) {
         try {
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            const audioCtx = new AudioCtx();
             const osc = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
             osc.connect(gainNode);
@@ -248,18 +252,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // 6. إعدادات التسجيل الأول (Onboarding & Modal)
     // ==========================================
     function checkOnboarding() {
+        if (!welcomeModal) return;
         if (myNickname && myNickname.trim() !== '') {
-            if (welcomeModal) {
-                welcomeModal.style.display = 'none';
-                welcomeModal.classList.remove('active');
-            }
-            document.body.style.overflow = 'auto';
+            welcomeModal.style.display = 'none';
+            welcomeModal.classList.remove('active');
+            if (body) body.style.overflow = 'auto';
         } else {
-            if (welcomeModal) {
-                welcomeModal.style.display = 'flex';
-                welcomeModal.classList.add('active');
-            }
-            document.body.style.overflow = 'hidden';
+            welcomeModal.style.display = 'flex';
+            welcomeModal.classList.add('active');
+            if (body) body.style.overflow = 'hidden';
         }
     }
 
@@ -288,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 welcomeModal.style.display = 'none';
                 welcomeModal.classList.remove('active');
             }
-            document.body.style.overflow = 'auto';
+            if (body) body.style.overflow = 'auto';
 
             showToast(t('welcomeGreeting', { name: myNickname }));
             updateLeaderboard();
@@ -373,7 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!myNickname) return;
         
         const labelYou = `(${t('you')})`;
-        const myIndex = leaderboardData.findIndex(item => item.me || item.name.includes(myNickname));
+        const myIndex = leaderboardData.findIndex(item => item.me || (item.name && item.name.includes(myNickname)));
         if (myIndex !== -1) {
             leaderboardData[myIndex].score = score;
             leaderboardData[myIndex].name = `${myNickname} ${labelYou}`;
@@ -413,7 +414,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tasks.forEach(task => { if (task.completed) completedCount++; });
 
         const filteredTasks = tasks.filter(task => {
-            const matchesSearch = task.text.toLowerCase().includes(filterText.toLowerCase());
+            const matchesSearch = task.text ? task.text.toLowerCase().includes(filterText.toLowerCase()) : true;
             const matchesCategory = (currentCategoryFilter === 'all' || task.category === currentCategoryFilter);
             
             let matchesStatus = true;
@@ -746,7 +747,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const matches = leaderboardData.filter(u => u.name.toLowerCase().includes(val) && !u.me);
+            const matches = leaderboardData.filter(u => u.name && u.name.toLowerCase().includes(val) && !u.me);
             if (matches.length > 0) {
                 friendAutocompleteList.style.display = 'block';
                 matches.forEach(m => {
@@ -787,8 +788,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast(t('duelSent', { name: friendName }));
             targetFriendInput.value = '';
             
-            let existingRequests = [];
-            try { existingRequests = JSON.parse(localStorage.getItem('nexus_duel_requests')) || []; } catch(e) {}
+            let existingRequests = safeJSONParse('nexus_duel_requests', []);
             existingRequests.push({ sender: myNickname });
             localStorage.setItem('nexus_duel_requests', JSON.stringify(existingRequests));
         });
@@ -861,11 +861,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (themeToggle) {
         themeToggle.addEventListener('click', () => {
-            if (body.getAttribute('data-theme') === 'light') {
+            if (body && body.getAttribute('data-theme') === 'light') {
                 body.setAttribute('data-theme', 'dark');
                 themeToggle.textContent = '☀️';
                 localStorage.setItem('nexus_theme', 'dark');
-            } else {
+            } else if (body) {
                 body.setAttribute('data-theme', 'light');
                 themeToggle.textContent = '🌙';
                 localStorage.setItem('nexus_theme', 'light');
