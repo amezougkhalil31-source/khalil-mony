@@ -39,7 +39,7 @@ body {
     justify-content: center;
     align-items: center;
     padding: 20px;
-    transition: background 0.3s;
+    transition: background 0.3s, color 0.3s;
 }
 
 /* 1. نافذة الترحيب الأولى - Onboarding تغطي الشاشة بالكامل */
@@ -134,6 +134,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    transition: background 0.3s, color 0.3s;
 }
 
 /* التجاوب مع الهواتف والطابليت */
@@ -145,7 +146,7 @@ body {
 
 /* الهيدر والأزرار */
 #toast {
-    position: absolute;
+    position: fixed;
     top: -60px;
     left: 50%;
     transform: translateX(-50%);
@@ -155,13 +156,13 @@ body {
     border-radius: 10px;
     font-size: 13px;
     font-weight: bold;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     transition: top 0.3s ease;
-    z-index: 1000;
+    z-index: 10000;
 }
 
 #toast.show {
-    top: 15px;
+    top: 25px;
 }
 
 .header {
@@ -229,10 +230,11 @@ body {
 }
 
 .pomodoro-time {
-    font-size: 26px;
+    font-size: 28px;
     font-weight: 800;
     color: var(--primary-color);
     margin-bottom: 8px;
+    letter-spacing: 1px;
 }
 
 .pomodoro-btns {
@@ -245,11 +247,16 @@ body {
     background: var(--primary-color);
     color: white;
     border: none;
-    padding: 6px 16px;
+    padding: 8px 18px;
     border-radius: 8px;
     font-size: 12px;
     font-weight: bold;
     cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.pomo-btn:hover {
+    opacity: 0.9;
 }
 
 .pomo-btn.reset {
@@ -274,16 +281,17 @@ body {
     gap: 8px;
     overflow-x: auto;
     margin-bottom: 15px;
-    padding-bottom: 4px;
+    padding-bottom: 6px;
+    scrollbar-width: thin;
 }
 
 .template-chip {
     background: rgba(99, 102, 241, 0.1);
     color: var(--primary-color);
     border: 1px solid var(--primary-color);
-    padding: 6px 12px;
+    padding: 6px 14px;
     border-radius: 20px;
-    font-size: 11px;
+    font-size: 12px;
     cursor: pointer;
     white-space: nowrap;
     font-weight: 600;
@@ -311,6 +319,7 @@ body {
     font-size: 12px;
     cursor: pointer;
     font-weight: 600;
+    transition: 0.2s;
 }
 
 .filter-btn.active {
@@ -403,7 +412,7 @@ input[type="text"], input[type="email"] {
 /* قائمة المهام */
 ul#taskList {
     list-style: none;
-    max-height: 240px;
+    max-height: 260px;
     overflow-y: auto;
     margin-bottom: 15px;
     display: flex;

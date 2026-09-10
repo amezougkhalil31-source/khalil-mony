@@ -4,9 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تقنية بومودورو: الدليل الشامل لإدارة الوقت وزيادة الإنتاجية</title>
+    
+    <!-- تحسينات SEO ومشاركة الروابط -->
+    <meta name="description" content="تعلم كيفية تطبيق تقنية بومودورو لإدارة الوقت وزيادة التركيز والإنتاجية في العمل والدراسة بخطوات عملية بسيطة ومؤقت تفاعلي.">
+    <meta name="keywords" content="بومودورو, إدارة الوقت, زيادة الإنتاجية, التركيز, Pomodoro Technique, تنظيم الوقت">
+    <meta property="og:title" content="تقنية بومودورو: الدليل الشامل لإدارة الوقت وزيادة الإنتاجية">
+    <meta property="og:description" content="دليل عملي لتنظيم الوقت ومحاربة التسويف باستخدام مؤقت بومودورو التفاعلي.">
+    <meta property="og:type" content="article">
+
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.8;
             background-color: #f9f9f9;
             color: #333;
@@ -18,8 +26,8 @@
             margin: 40px auto;
             background: #fff;
             padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
         h1, h2 {
             color: #2c3e50;
@@ -42,8 +50,47 @@
             padding-right: 20px;
         }
         li {
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
+
+        /* أدوات ومؤقت بومودورو التفاعلي */
+        .pomo-widget {
+            background: #f0fdf4;
+            border: 2px dashed #22c55e;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        .pomo-widget h3 {
+            margin: 0 0 10px 0;
+            color: #166534;
+        }
+        .timer-display {
+            font-size: 42px;
+            font-weight: bold;
+            color: #15803d;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        .btn-timer {
+            background: #22c55e;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn-timer:hover {
+            background: #16a34a;
+        }
+        .btn-timer:active {
+            transform: scale(0.98);
+        }
+
         .footer {
             margin-top: 40px;
             text-align: center;
@@ -55,9 +102,27 @@
         a {
             color: #3498db;
             text-decoration: none;
+            font-weight: bold;
         }
         a:hover {
             text-decoration: underline;
+        }
+
+        /* تحسين التجاوب مع الهواتف الذكية */
+        @media (max-width: 600px) {
+            .container {
+                margin: 15px;
+                padding: 20px;
+            }
+            h1 {
+                font-size: 22px;
+            }
+            h2 {
+                font-size: 18px;
+            }
+            .timer-display {
+                font-size: 34px;
+            }
         }
     </style>
 </head>
@@ -70,6 +135,13 @@
 
         <h2>ما هي تقنية بومودورو؟</h2>
         <p>هي طريقة لإدارة الوقت ابتكرها الإيطالي "فرانشيسكو سيريلو" في أواخر الثمانينات. تعتمد الفكرة الأساسية على تقسيم وقت العمل إلى فترات مركزة قصيرة، يفصل بينها استراحات قصيرة، مما يساعد العقل على البقاء في قمة نشاطه ويمنع الشعور بالإرهاق.</p>
+
+        <!-- تطبيق المبدأ التفاعلي لتجربة المستخدم -->
+        <div class="pomo-widget">
+            <h3>⚡ جرب مؤقت التركيز الآن</h3>
+            <div class="timer-display" id="widgetTimer">25:00</div>
+            <button class="btn-timer" id="startWidgetBtn">بدء التركيز</button>
+        </div>
 
         <h2>خطوات تطبيق تقنية بومودورو</h2>
         <ul>
@@ -86,6 +158,44 @@
             <p>&copy; 2026 جميع الحقوق محفوظة | <a href="index.html">الرئيسية</a></p>
         </div>
     </div>
+
+    <script>
+        let timer;
+        let timeLeft = 1500; // 25 دقيقة
+        let isRunning = false;
+
+        const display = document.getElementById('widgetTimer');
+        const btn = document.getElementById('startWidgetBtn');
+
+        btn.addEventListener('click', () => {
+            if (!isRunning) {
+                isRunning = true;
+                btn.textContent = 'إيقاف مؤقت';
+                btn.style.background = '#e11d48';
+                timer = setInterval(() => {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        let mins = Math.floor(timeLeft / 60);
+                        let secs = timeLeft % 60;
+                        display.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                    } else {
+                        clearInterval(timer);
+                        alert('🎉 انتهت جلسة البومودورو! خذ استراحة لمدة 5 دقائق.');
+                        isRunning = false;
+                        timeLeft = 1500;
+                        display.textContent = '25:00';
+                        btn.textContent = 'بدء التركيز';
+                        btn.style.background = '#22c55e';
+                    }
+                }, 1000);
+            } else {
+                clearInterval(timer);
+                isRunning = false;
+                btn.textContent = 'استئناف';
+                btn.style.background = '#22c55e';
+            }
+        });
+    </script>
 
 </body>
 </html>

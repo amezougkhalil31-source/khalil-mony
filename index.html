@@ -8,13 +8,13 @@
 </head>
 <body data-theme="light">
 
-    <!-- نافذة الترحيب الأولى (تغطي الشاشة بالكامل ومستقلة) -->
+    <!-- نافذة الترحيب الأولى -->
     <div id="welcomeModal" class="welcome-overlay">
         <div class="welcome-card">
             <h2 id="welcTitle">🚀 مرحباً بك في تطبيق Nexus Task!</h2>
             <p id="welcSub">المرجو إدخال اللقب الذي سيظهر في لوحة المتصدرين العالمية:</p>
             
-            <form id="welcomeForm" onsubmit="return false;">
+            <form id="welcomeForm" onsubmit="event.preventDefault();">
                 <input type="text" id="welcomeNickname" placeholder="مثلاً: بطل البرمجة 💻" required autocomplete="off">
 
                 <div class="email-section">
@@ -22,12 +22,12 @@
                     <small class="help-text" id="welcHelp">💡 إذا أدخلت بريدك الإلكتروني، ستتوصل برسالة ترحيبية فورية ورسائل تحفيزية دورية.</small>
                 </div>
 
-                <button type="button" id="startAppBtn" class="add-btn">دخول للتطبيق 🎯</button>
+                <button type="submit" id="startAppBtn" class="add-btn">دخول للتطبيق 🎯</button>
             </form>
         </div>
     </div>
 
-    <!-- الهيكل الرئيسي للتطبيق الممتد -->
+    <!-- الهيكل الرئيسي للتطبيق -->
     <div class="app-layout">
         <div class="container">
             <div id="toast">إشعار</div>
@@ -35,7 +35,7 @@
             <div class="header">
                 <h2>Nexus Task ⚡</h2>
                 <div class="header-right">
-                    <select id="langSelect" class="lang-select">
+                    <select id="langSelect" class="lang-select" aria-label="اختر اللغة">
                         <option value="ar">العربية 🇸🇦</option>
                         <option value="en">English 🇬🇧</option>
                         <option value="fr">Français 🇫🇷</option>
@@ -47,6 +47,7 @@
                 </div>
             </div>
 
+            <!-- مؤقت البومودورو -->
             <div class="pomodoro-box">
                 <div class="pomodoro-time" id="pomoTimer">25:00</div>
                 <div class="pomodoro-btns">
@@ -66,12 +67,14 @@
                 <button class="template-chip" data-task-ar="شرب لترين من الماء" data-task-en="Drink 2L Water" data-task-fr="Boire 2L d'Eau" id="tmpl4">💧 ماء</button>
             </div>
 
+            <!-- أزرار التصفية -->
             <div class="filter-tabs">
                 <button class="filter-btn active" data-filter="all" id="filterAll">الكل</button>
                 <button class="filter-btn" data-filter="active" id="filterActive">النشطة</button>
                 <button class="filter-btn" data-filter="completed" id="filterCompleted">المكتملة</button>
             </div>
 
+            <!-- قسم إضافة مهمة جديدة -->
             <div class="input-section">
                 <input type="text" id="taskInput" placeholder="ما هي المهمة التي تريد إنجازها؟">
                 <div class="input-row">
@@ -90,6 +93,7 @@
                 <button class="add-btn" id="addBtn">إضافة مهمة مع تنبيه</button>
             </div>
 
+            <!-- شريط الإنجاز والإحصائيات -->
             <div class="progress-container">
                 <div class="progress-bar" id="progressBar"></div>
             </div>
@@ -103,6 +107,7 @@
 
             <button class="clear-all" id="clearAllBtn">مسح جميع المهام</button>
 
+            <!-- التذييل -->
             <div class="site-footer">
                 <a href="about.html" id="footAbout">من نحن</a>
                 <span>·</span>
@@ -144,7 +149,7 @@
         </div>
     </div>
 
-    <!-- نافذة اختيار المسار (5 أشرطة) -->
+    <!-- نافذة اختيار المسار -->
     <div class="modal-overlay" id="columnSelectModal">
         <div class="modal-content" style="max-width: 600px;">
             <button class="close-modal" id="closeColumnSelectModal">✕</button>
@@ -177,7 +182,7 @@
         </div>
     </div>
 
-    <!-- شاشة العد التنازلي التنافسي -->
+    <!-- شاشة العد التنازلي -->
     <div class="modal-overlay" id="countdownModal">
         <div class="modal-content" style="text-align: center;">
             <h3 id="waitingOpponentText">⏳ في انتظار اختيار الخصم لمساره...</h3>
@@ -186,7 +191,7 @@
         </div>
     </div>
 
-    <!-- نافذة ساحة التحدي المباشرة -->
+    <!-- ساحة التحدي المباشرة -->
     <div class="modal-overlay" id="activeDuelArenaModal">
         <div class="modal-content" style="max-width: 650px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
