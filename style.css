@@ -30,6 +30,13 @@
     margin: 0;
     padding: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    touch-action: manipulation; /* منع الزوم والتمدد المزدوج فالتليفونات */
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
 }
 
 body {
@@ -42,20 +49,21 @@ body {
     transition: background 0.3s, color 0.3s;
 }
 
-/* 1. نافذة الترحيب الأولى - Onboarding تغطي الشاشة بالكامل */
+/* 1. نافذة الترحيب والتسجيل الأولى - معتمة 100% لمنع الشفافية ورؤية التطبيق */
 .welcome-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(15, 23, 42, 0.95);
-    backdrop-filter: blur(10px);
+    /* خلفية معتمة بالكامل لحجب كل ما هو وراءها */
+    background: #0f172a;
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 9999;
+    z-index: 99999;
     padding: 20px;
+    overflow: hidden;
 }
 
 .welcome-card {
@@ -65,12 +73,14 @@ body {
     max-width: 440px;
     padding: 30px;
     border-radius: 24px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
     display: flex;
     flex-direction: column;
     gap: 16px;
     text-align: center;
     animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    z-index: 100000;
 }
 
 @keyframes scaleIn {
@@ -158,7 +168,7 @@ body {
     font-weight: bold;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     transition: top 0.3s ease;
-    z-index: 10000;
+    z-index: 100000;
 }
 
 #toast.show {
@@ -190,7 +200,7 @@ body {
     font-weight: 600;
 }
 
-.inbox-btn, .guide-btn-icon, .theme-btn {
+.inbox-btn, .guide-btn-icon, .theme-btn, .logout-btn {
     background: var(--input-bg);
     border: 1px solid var(--border-color);
     color: var(--text-color);
@@ -206,7 +216,7 @@ body {
     position: relative;
 }
 
-.inbox-btn:hover, .guide-btn-icon:hover, .theme-btn:hover {
+.inbox-btn:hover, .guide-btn-icon:hover, .theme-btn:hover, .logout-btn:hover {
     background: var(--border-color);
 }
 
@@ -535,8 +545,8 @@ ul#taskList li.completed {
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
     display: flex;
     justify-content: center;
     align-items: center;

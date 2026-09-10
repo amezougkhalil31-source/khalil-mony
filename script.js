@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentCategoryFilter = 'all';
     let editIndex = null;
     let pomoInterval = null;
-    let timeLeft = 1500; // 25 minutes
+    let timeLeft = 1500; // 25 دقائق
     let isRunning = false;
 
     const STORAGE_KEY = 'nexus_tasks_master_db';
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
             duelRejected: "تم رفض طلب التحدي.",
             invalidFriend: "المرجو كتابة اسم الصديق بدقة!",
             selfDuelError: "لا يمكنك تحدي نفسك!",
-            duelSent: "🚀 تم إرسال دعوة التحدي بنجاح إلى "{name}"!",
+            duelSent: "🚀 تم إرسال دعوة التحدي بنجاح إلى {name}!",
             editBtn: "تعديل",
             deleteBtn: "حذف",
             completedText: "المكتملة",
@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
             duelRejected: "Duel request rejected.",
             invalidFriend: "Please enter a valid friend nickname!",
             selfDuelError: "You cannot challenge yourself!",
-            duelSent: "🚀 Duel invitation sent to "{name}"!",
+            duelSent: "🚀 Duel invitation sent to {name}!",
             editBtn: "Edit",
             deleteBtn: "Delete",
             completedText: "Completed",
@@ -253,11 +253,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 welcomeModal.style.display = 'none';
                 welcomeModal.classList.remove('active');
             }
+            document.body.style.overflow = 'auto';
         } else {
             if (welcomeModal) {
                 welcomeModal.style.display = 'flex';
                 welcomeModal.classList.add('active');
             }
+            document.body.style.overflow = 'hidden';
         }
     }
 
@@ -286,6 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 welcomeModal.style.display = 'none';
                 welcomeModal.classList.remove('active');
             }
+            document.body.style.overflow = 'auto';
 
             showToast(t('welcomeGreeting', { name: myNickname }));
             updateLeaderboard();
@@ -692,7 +695,6 @@ document.addEventListener('DOMContentLoaded', () => {
             duelRequestsList.appendChild(li);
         });
 
-        // Event delegation / attach events cleanly
         duelRequestsList.querySelectorAll('.accept-duel-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const senderName = e.target.getAttribute('data-sender');
