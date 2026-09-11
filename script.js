@@ -52,6 +52,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const templateChips = document.querySelectorAll('.template-chip');
     const leaderboardList = document.getElementById('leaderboardList');
 
+    const columnSelectModal = document.getElementById('columnSelectModal');
+    const closeColumnSelectModal = document.getElementById('closeColumnSelectModal');
+    const confirmColumnBtn = document.getElementById('confirmColumnBtn');
+    const countdownModal = document.getElementById('countdownModal');
+    const activeDuelArenaModal = document.getElementById('activeDuelArenaModal');
+    const closeArenaModal = document.getElementById('closeArenaModal');
+    const forfeitDuelBtn = document.getElementById('forfeitDuelBtn');
+
     // عناصر تحدي الأصدقاء (1 vs 1)
     const openDuelModalBtn = document.getElementById('openDuelModalBtn');
     const closeDuelModal = document.getElementById('closeDuelModal');
@@ -75,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let pomoInterval = null;
     let timeLeft = 1500; // 25 دقائق
     let isRunning = false;
+    let selectedColumn = null;
 
     const STORAGE_KEY = 'nexus_tasks_master_db';
 
@@ -98,6 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let leaderboardData = safeJSONParse('nexus_leaderboard', []);
     let myDuelRequests = safeJSONParse('nexus_duel_requests', []);
     let activeDuels = safeJSONParse('nexus_active_duels', []);
+    let matchHistory = safeJSONParse('nexus_match_history', []);
 
     // ضبط المظهر الأولي
     const savedTheme = localStorage.getItem('nexus_theme') || 'light';
@@ -182,6 +192,37 @@ document.addEventListener('DOMContentLoaded', () => {
             scoreText: "Score",
             levelText: "Level",
             you: "You"
+        },
+        fr: {
+            addBtnDefault: "Ajouter une tâche",
+            addBtnUpdate: "Mettre à jour",
+            emptyError: "Veuillez saisir le titre de la tâche!",
+            taskAdded: "Tâche ajoutée avec succès!",
+            taskUpdated: "Tâche mise à jour avec succès!",
+            taskDeleted: "Tâche supprimée",
+            allCleared: "Toutes les tâches ont été supprimées",
+            completeSuccess: "Tâche terminée! +20 ⭐",
+            expiredAlert: "⚠️ Expirée :",
+            dueAlert: "⏰ Tâche à échéance :",
+            focusSessionEnd: "🎉 Session de concentration terminée! +30 points",
+            startFocus: "Commencer",
+            pauseFocus: "Pause",
+            enterNicknameReq: "⚠️ Veuillez saisir un surnom pour participer au classement!",
+            welcomeGreeting: "Bienvenue {name} dans Nexus Task! 🚀",
+            welcomeEmailMsg: "📩 Un email de bienvenue a été envoyé!",
+            noLeaderboard: "Aucun classement pour le moment.",
+            noDuels: "Aucune demande de duel pour le moment.",
+            duelAccepted: "Vous avez accepté le duel contre {name}! Le combat a commencé ⚔️",
+            duelRejected: "La demande de duel a été refusée.",
+            invalidFriend: "Veuillez saisir un surnom valide!",
+            selfDuelError: "Vous ne pouvez pas vous défier vous-même!",
+            duelSent: "🚀 Invitation de duel envoyée à {name}!",
+            editBtn: "Modifier",
+            deleteBtn: "Supprimer",
+            completedText: "Terminées",
+            scoreText: "Points",
+            levelText: "Niveau",
+            you: "Vous"
         }
     };
 
@@ -203,6 +244,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (addBtn) {
             addBtn.textContent = editIndex === null ? t('addBtnDefault') : t('addBtnUpdate');
+        }
+
+        if (pomoStart) {
+            pomoStart.textContent = isRunning ? t('pauseFocus') : t('startFocus');
         }
         
         saveAndRender();
@@ -290,6 +335,29 @@ document.addEventListener('DOMContentLoaded', () => {
         if (body) body.style.overflow = hasNickname ? 'auto' : 'hidden';
     }
 
+    function renderMatchHistory() {
+        if (!historyList) return;
+        historyList.innerHTML = '';
+
+        if (matchHistory.length === 0) {
+            historyList.innerHTML = `<li style="font-size:12px; opacity:0.7; text-align:center; padding:10px;">${t('noLeaderboard')}</li>`;
+            return;
+        }
+
+        matchHistory.forEach(entry => {
+            const li = document.createElement('li');
+            li.className = 'history-item';
+            li.innerHTML = `
+                <div>
+                    <strong>${escapeHTML(entry.title || 'Match')}</strong>
+                    <div style="font-size:11px; opacity:0.75; margin-top:4px;">${escapeHTML(entry.date || '')}</div>
+                </div>
+                <span class="badge-${entry.result || 'draw'}">${escapeHTML(entry.resultLabel || entry.result || 'Draw')}</span>
+            `;
+            historyList.appendChild(li);
+        });
+    }
+
     if (startAppBtn) {
         startAppBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -325,6 +393,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
             showToast(t('welcomeGreeting', { name: myNickname }));
             updateLeaderboard();
+        });
+    }
+
+    if (logoutBtn && logoutModal) {
+        logoutBtn.addEventListener('click', () => {
+            logoutModal.classList.add('active');
+        });
+    }
+
+    if (cancelLogoutBtn && logoutModal) {
+        cancelLogoutBtn.addEventListener('click', () => {
+            logoutModal.classList.remove('active');
+        });
+    }
+
+    if (confirmLogoutBtn) {
+        confirmLogoutBtn.addEventListener('click', () => {
+            myNickname = '';
+            myEmail = '';
+            localStorage.removeItem('nexus_nickname');
+            localStorage.removeItem('nexus_email');
+
+            leaderboardData = leaderboardData.filter(item => !item.me);
+            localStorage.setItem('nexus_leaderboard', JSON.stringify(leaderboardData));
+
+            if (logoutModal) logoutModal.classList.remove('active');
+            checkOnboarding();
+            renderTasks(searchBox ? searchBox.value : '');
+            updateLeaderboard();
+            showToast('Logged out successfully', '#64748b');
+        });
+    }
+
+    if (openInboxBtn && inboxModal) {
+        openInboxBtn.addEventListener('click', () => {
+            renderDuelRequests();
+            inboxModal.classList.add('active');
+        });
+    }
+
+    if (closeInboxModal && inboxModal) {
+        closeInboxModal.addEventListener('click', () => {
+            inboxModal.classList.remove('active');
+        });
+    }
+
+    if (viewMatchHistoryBtn && matchHistoryModal) {
+        viewMatchHistoryBtn.addEventListener('click', () => {
+            renderMatchHistory();
+            matchHistoryModal.classList.add('active');
+        });
+    }
+
+    if (closeMatchHistoryModal && matchHistoryModal) {
+        closeMatchHistoryModal.addEventListener('click', () => {
+            matchHistoryModal.classList.remove('active');
         });
     }
 
@@ -747,6 +871,13 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast(t('duelAccepted', { name: senderName }));
         activeDuels.push({ opponent: senderName, startTime: Date.now(), durationDays: 30 });
         localStorage.setItem('nexus_active_duels', JSON.stringify(activeDuels));
+        matchHistory.unshift({
+            title: `${currentLang === 'en' ? 'Accepted duel against' : 'قبول تحدي ضد'} ${senderName}`,
+            date: new Date().toLocaleString(currentLang === 'en' ? 'en-US' : 'ar-SA'),
+            result: 'win',
+            resultLabel: currentLang === 'en' ? 'Win' : 'فوز'
+        });
+        localStorage.setItem('nexus_match_history', JSON.stringify(matchHistory));
         myDuelRequests = myDuelRequests.filter(r => r.sender !== senderName);
         localStorage.setItem('nexus_duel_requests', JSON.stringify(myDuelRequests));
         renderDuelRequests();
@@ -817,12 +948,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            const existingRequests = safeJSONParse('nexus_duel_requests', []);
+            const alreadyRequested = existingRequests.some(req => req.sender === myNickname && req.friend === friendName);
+
+            if (alreadyRequested) {
+                showToast(t('duelSent', { name: friendName }), '#f59e0b');
+                targetFriendInput.value = '';
+                return;
+            }
+
+            const newRequest = { sender: myNickname, friend: friendName };
+            existingRequests.push(newRequest);
+            myDuelRequests = existingRequests;
+            localStorage.setItem('nexus_duel_requests', JSON.stringify(existingRequests));
             showToast(t('duelSent', { name: friendName }));
             targetFriendInput.value = '';
-            
-            let existingRequests = safeJSONParse('nexus_duel_requests', []);
-            existingRequests.push({ sender: myNickname });
-            localStorage.setItem('nexus_duel_requests', JSON.stringify(existingRequests));
+            if (duelRequestsList) renderDuelRequests();
         });
     }
 
@@ -833,7 +974,8 @@ document.addEventListener('DOMContentLoaded', () => {
         templateChips.forEach(chip => {
             chip.addEventListener('click', () => {
                 if (taskInput) {
-                    taskInput.value = chip.getAttribute('data-task');
+                    const taskText = chip.getAttribute(`data-task-${currentLang}`) || chip.getAttribute('data-task-ar') || chip.textContent.trim();
+                    taskInput.value = taskText;
                     taskInput.focus();
                 }
             });
@@ -851,6 +993,12 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('click', (e) => {
         if (guideModal && e.target === guideModal) guideModal.classList.remove('active');
         if (duelModal && e.target === duelModal) duelModal.classList.remove('active');
+        if (inboxModal && e.target === inboxModal) inboxModal.classList.remove('active');
+        if (matchHistoryModal && e.target === matchHistoryModal) matchHistoryModal.classList.remove('active');
+        if (logoutModal && e.target === logoutModal) logoutModal.classList.remove('active');
+        if (columnSelectModal && e.target === columnSelectModal) columnSelectModal.classList.remove('active');
+        if (countdownModal && e.target === countdownModal) countdownModal.classList.remove('active');
+        if (activeDuelArenaModal && e.target === activeDuelArenaModal) activeDuelArenaModal.classList.remove('active');
     });
 
     if (addBtn) addBtn.addEventListener('click', addTask);
@@ -902,6 +1050,58 @@ document.addEventListener('DOMContentLoaded', () => {
                 themeToggle.textContent = '🌙';
                 localStorage.setItem('nexus_theme', 'light');
             }
+        });
+    }
+
+    if (autocompleteList) {
+        autocompleteList.style.display = 'none';
+    }
+
+    if (columnSelectModal) {
+        const columnCards = document.querySelectorAll('.column-card');
+        columnCards.forEach(card => {
+            card.addEventListener('click', () => {
+                selectedColumn = card.getAttribute('data-col');
+                columnCards.forEach(item => item.classList.toggle('selected', item === card));
+                if (confirmColumnBtn) confirmColumnBtn.disabled = !selectedColumn;
+            });
+        });
+
+        if (closeColumnSelectModal) {
+            closeColumnSelectModal.addEventListener('click', () => {
+                columnSelectModal.classList.remove('active');
+                selectedColumn = null;
+                if (confirmColumnBtn) confirmColumnBtn.disabled = true;
+            });
+        }
+
+        if (confirmColumnBtn) {
+            confirmColumnBtn.addEventListener('click', () => {
+                if (!selectedColumn) {
+                    showToast(currentLang === 'en' ? 'Please choose a route first.' : 'المرجو اختيار المسار أولاً.', '#f59e0b');
+                    return;
+                }
+                columnSelectModal.classList.remove('active');
+                if (countdownModal) {
+                    countdownModal.classList.add('active');
+                }
+                showToast(currentLang === 'en' ? `Route ${selectedColumn} confirmed.` : `تم تأكيد المسار ${selectedColumn}.`, '#10b981');
+            });
+        }
+    }
+
+    if (closeArenaModal && activeDuelArenaModal) {
+        closeArenaModal.addEventListener('click', () => {
+            activeDuelArenaModal.classList.remove('active');
+        });
+    }
+
+    if (forfeitDuelBtn) {
+        forfeitDuelBtn.addEventListener('click', () => {
+            if (activeDuelArenaModal) activeDuelArenaModal.classList.remove('active');
+            score = Math.max(0, score - 50);
+            saveAndRender();
+            showToast(currentLang === 'en' ? 'You forfeited the duel and lost 50 points.' : 'انسحبت من التحدي وفقدت 50 نقطة.', '#ef4444');
         });
     }
 
