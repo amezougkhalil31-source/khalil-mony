@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <!-- منع الزوم والتحكم فـ الشاشة باش ما تبانش الخلفية ولا تحرك الشاشة -->
+    <!-- منع الزوم والتحكم في الشاشة لمنع تحريكها -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Nexus Task Ultimate Pro Max - تنظيم المهام والمنافسة</title>
     <link rel="stylesheet" href="style.css">
@@ -85,18 +85,18 @@
             <div class="input-section">
                 <input type="text" id="taskInput" placeholder="ما هي المهمة التي تريد إنجازها؟">
                 <div class="input-row">
-                    <select id="categorySelect" class="category-select">
+                    <select id="categorySelect" class="category-select" aria-label="فئة المهمة">
                         <option value="Work" id="optWork">💼 العمل</option>
                         <option value="Study" id="optStudy">📚 الدراسة</option>
                         <option value="Personal" id="optPersonal">🎯 شخصي</option>
                     </select>
-                    <select id="repeatSelect" class="repeat-select">
+                    <select id="repeatSelect" class="repeat-select" aria-label="تكرار المهمة">
                         <option value="None" id="repNone">بدون تكرار</option>
                         <option value="Daily" id="repDaily">يومي</option>
                         <option value="Weekly" id="repWeekly">أسبوعي</option>
                     </select>
                 </div>
-                <input type="datetime-local" id="dateTimeInput">
+                <input type="datetime-local" id="dateTimeInput" aria-label="تاريخ ووقت المهمة">
                 <button type="button" class="add-btn satisfied-btn" id="addBtn">إضافة مهمة مع تنبيه (+10 نقاط) 🚀</button>
             </div>
 
@@ -156,14 +156,14 @@
             <h3 id="duelModalTitle" style="color: #4f46e5; margin-bottom: 10px;">⚔️ غرفة تحدي الأصدقاء (30 يوماً)</h3>
             <div style="background: rgba(99, 102, 241, 0.1); border-radius: 8px; padding: 10px; margin-bottom: 12px;">
                 <p id="duelRulesSummary" style="font-size: 12px; line-height: 1.5; color: #4338ca;">
-                    <strong>📌 القواعد والرهان:</strong> دخول التحدي يتطلب <strong>50 نقطة/نجمة</strong> على الأقل في رصيدك العالمي. يتم خصم 50 نقطة من الطرفين (المجموع = 100 نقطة). الفائز يحصد الـ 50 نقطة في النهاية.
+                    <strong>📌 القواعد والرهان:</strong> دخول التحدي يتطلب <strong>50 نقطة/نجمة</strong> على الأقل في رصيدك العالمي. يتم خصم 50 نقطة من الطرفين (المجموع = 100 نقطة). والفائز يحصد النقاط في النهاية.
                 </p>
             </div>
             
             <div class="input-section" style="gap: 8px; margin-bottom: 15px; position:relative;">
                 <input type="text" id="targetFriendInput" placeholder="اكتب لقب الصديق بدقة..." autocomplete="off">
                 <ul id="autocompleteList" class="autocomplete-list"></ul>
-                <button type="button" class="add-btn satisfied-btn" id="sendDuelRequestBtn">إرسال دعوة التحدي (قتطاع 50 نقطة) 🎯</button>
+                <button type="button" class="add-btn satisfied-btn" id="sendDuelRequestBtn">إرسال دعوة التحدي (اقتطاع 50 نقطة) 🎯</button>
             </div>
         </div>
     </div>
