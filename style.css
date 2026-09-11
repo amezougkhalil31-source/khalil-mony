@@ -543,6 +543,26 @@ ul#taskList li.completed {
     background: rgba(79, 70, 229, 0.08);
 }
 
+.leaderboard-item.rank-1 {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(255, 255, 255, 0.96));
+    border-color: rgba(245, 158, 11, 0.7);
+    box-shadow: 0 10px 22px rgba(245, 158, 11, 0.18);
+}
+
+.leaderboard-item.rank-2 {
+    background: linear-gradient(135deg, rgba(148, 163, 184, 0.18), rgba(255, 255, 255, 0.96));
+    border-color: rgba(148, 163, 184, 0.7);
+}
+
+.leaderboard-item.rank-3 {
+    background: linear-gradient(135deg, rgba(180, 83, 9, 0.18), rgba(255, 255, 255, 0.96));
+    border-color: rgba(180, 83, 9, 0.7);
+}
+
+.leaderboard-item.rank-default {
+    background: rgba(255, 255, 255, 0.96);
+}
+
 .rank-badge {
     display: inline-block;
     width: 24px;

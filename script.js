@@ -152,6 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
             focusSessionEnd: "🎉 انتهت جلسة التركيز! +30 نقطة",
             startFocus: "بدء التركيز",
             pauseFocus: "إيقاف مؤقت",
+            resetFocus: "إعادة ضبط",
             enterNicknameReq: "⚠️ المرجو إدخال اللقب للبدء والمنافسة في المتصدرين!",
             welcomeGreeting: "أهلاً بك يا {name} في Nexus Task! 🚀",
             welcomeEmailMsg: "📩 تم إرسال رسالة ترحيبية إلى بريدك الإلكتروني!",
@@ -160,6 +161,8 @@ document.addEventListener('DOMContentLoaded', () => {
             duelAccepted: "قبِلت التحدي ضد {name}! بدأت المعركة ⚔️",
             duelRejected: "تم رفض طلب التحدي.",
             invalidFriend: "المرجو كتابة اسم الصديق بدقة!",
+            invalidEmail: "البريد الإلكتروني غير صحيح. المرجو إدخال بريد إلكتروني صحيح.",
+            nicknameTaken: "هذا اللقب \"{name}\" مستخدم بالفعل.",
             selfDuelError: "لا يمكنك تحدي نفسك!",
             duelSent: "🚀 تم إرسال دعوة التحدي بنجاح إلى {name}!",
             editBtn: "تعديل",
@@ -167,7 +170,78 @@ document.addEventListener('DOMContentLoaded', () => {
             completedText: "المكتملة",
             scoreText: "النقاط",
             levelText: "المستوى",
-            you: "أنت"
+            you: "أنت",
+            welcomeTitle: "🚀 مرحباً بك في تطبيق Nexus Task!",
+            welcomeSubtitle: "المرجو إدخال اللقب والبريد الإلكتروني للإنضمام للائحة العالمية:",
+            welcomeNicknamePlaceholder: "مثلاً: بطل البرمجة 💻",
+            welcomeEmailPlaceholder: "البريد الإلكتروني (مثال: name@gmail.com)",
+            welcomeHelpText: "💡 سيتم إرسال رابط/كود تأكيد للتأكد من وجود الإيميل فعلياً.",
+            startAppBtnLabel: "دخول للتطبيق 🎯",
+            quickReadyText: "جاهز:",
+            quickWorkoutLabel: "رياضة",
+            quickReadLabel: "قراءة",
+            quickReviewLabel: "مراجعة",
+            quickWaterLabel: "ماء",
+            quickWorkLabel: "عمل",
+            filterAll: "الكل",
+            filterActive: "النشطة",
+            filterCompleted: "المكتملة",
+            searchBoxPlaceholder: "🔍 البحث في المهام...",
+            taskInputPlaceholder: "ما هي المهمة التي تريد إنجازها؟",
+            categoryWork: "💼 العمل",
+            categoryStudy: "📚 الدراسة",
+            categoryPersonal: "🎯 شخصي",
+            repeatNone: "بدون تكرار",
+            repeatDaily: "يومي",
+            repeatWeekly: "أسبوعي",
+            addTaskBtnLabel: "إضافة مهمة جديدة 🚀",
+            footAbout: "من نحن",
+            footPrivacy: "سياسة الخصوصية",
+            footContact: "اتصل بنا",
+            footBlog: "المدونة",
+            lbTitle: "🌍 الترتيب العالمي",
+            lbSub: "قائمة الأبطال الحقيقيين في التطبيق:",
+            duelMainBtn: "⚔️ تحدي الأصدقاء (1V1)",
+            activeDuelBtn: "⚔️ ساحة 1V1 النشطة",
+            matchHistoryBtn: "📜 سجل المباريات (Match History)",
+            duelModalTitle: "⚔️ غرفة تحدي الأصدقاء (30 يوماً)",
+            duelRulesSummary: "📌 القواعد والرهان: دخول التحدي يتطلب 50 نقطة/نجمة على الأقل في رصيدك العالمي. يتم خصم 50 نقطة من الطرفين (المجموع = 100 نقطة). والفائز يحصد النقاط في النهاية.",
+            targetFriendInputPlaceholder: "اكتب لقب الصديق بدقة...",
+            sendDuelButton: "إرسال دعوة التحدي (اقتطاع 50 نقطة) 🎯",
+            colSelectTitle: "🎯 اختر مسار التحدي الخاص بك",
+            colSelectSub: "اختر شريط المهام الذي ستلتزم به طوال الـ 30 يوماً ضد منافسك:",
+            col1Title: "📌 الشريط 1: مسار التركيز والإنتاجية (البومودورو)",
+            col2Title: "📌 الشريط 2: مسار الانضباط والالتزام اليومي",
+            col3Title: "📌 الشريط 3: مسار التحديات السريعة",
+            col4Title: "📌 الشريط 4: مسار بناء العادات والتطوير الذاتي",
+            col5Title: "📌 الشريط 5: المسار الشامل والمتنوع",
+            col1Desc: "يحتوي على 8 مهام مخصصة لجلسات التركيز العميق وإدارة الوقت.",
+            col2Desc: "يحتوي على 9 مهام تبني الانضباط الحديدي والاستيقاظ والالتزام.",
+            col3Desc: "يحتوي على 7 مهام خاطفة وقوية لإنجازها في وقت قياسي.",
+            col4Desc: "يحتوي على 10 مهام لترسيخ العادات الإيجابية والقراءة والرياضة.",
+            col5Desc: "مزج متوازن لجميع أنواع المهام للياقة، العمل، والتطوير.",
+            confirmColumnBtnLabel: "تأكيد اختيار المسار 🚀",
+            waitingOpponentText: "⏳ في انتظار اختيار الخصم لمساره...",
+            countdownSub: "استعد! التحدي على وشك البدء بمدة 30 يوماً!",
+            arenaTitle: "⚔️ ساحة التحدي المباشر (30 يوماً)",
+            dailyResetNotice: "🔄 يتم تفريغ علامات الإنجاز تلقائياً كل 24 ساعة للبدء في دورة جديدة مع احتفاظك بكامل نقاطك التراكمية!",
+            forfeitDuelBtnLabel: "🏳️ الانسحاب من التحدي (خسارة 50 نقطة)",
+            historyModalTitle: "📜 سجل المباريات الأرشيفي",
+            inboxModalTitle: "📩 صندوق الطلبات والرسائل",
+            guideTitle: "📖 دليل زيادة الإنتاجية وتنظيم الوقت",
+            guideDesc1: "تطبيق Nexus Task هو أداة متكاملة صُممت لتنظيم وقتك والحد من التسويف عبر استراتيجيات عالمية:",
+            guideTip1: "تقنية بومودورو:",
+            guideTip1Text: "تقسيم العمل لجلسات تركيز 25 دقيقة لتجنب التشتت.",
+            guideTip2: "الالتزام اليومي (Streak):",
+            guideTip2Text: "أنجز ولو مهمة واحدة كل 24 ساعة لرفع نقاطك (+10 لكل مهمة).",
+            inboxTitle: "الرسائل والطلبات",
+            guideTitleBtn: "دليل الإنتاجية",
+            themeTitle: "تغيير المظهر",
+            logoutTitle: "تسجيل الخروج",
+            confirmLogout: "نعم، خروج",
+            cancelLogout: "إلغاء",
+            logoutModalTitle: "🚪 تأكيد الخروج",
+            logoutModalText: "هل أنت متأكد من أنك تريد الخروج من الحساب؟"
         },
         en: {
             addBtnDefault: "Add New Task",
@@ -183,6 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
             focusSessionEnd: "🎉 Focus session finished! +30 points",
             startFocus: "Start Focus",
             pauseFocus: "Pause",
+            resetFocus: "Reset",
             enterNicknameReq: "⚠️ Please enter a nickname to compete on the leaderboard!",
             welcomeGreeting: "Welcome {name} to Nexus Task! 🚀",
             welcomeEmailMsg: "📩 Welcome email sent to your inbox!",
@@ -191,6 +266,8 @@ document.addEventListener('DOMContentLoaded', () => {
             duelAccepted: "Accepted duel against {name}! Battle started ⚔️",
             duelRejected: "Duel request rejected.",
             invalidFriend: "Please enter a valid friend nickname!",
+            invalidEmail: "The email address is invalid. Please enter a valid email.",
+            nicknameTaken: "The nickname \"{name}\" is already used.",
             selfDuelError: "You cannot challenge yourself!",
             duelSent: "🚀 Duel invitation sent to {name}!",
             editBtn: "Edit",
@@ -198,7 +275,78 @@ document.addEventListener('DOMContentLoaded', () => {
             completedText: "Completed",
             scoreText: "Score",
             levelText: "Level",
-            you: "You"
+            you: "You",
+            welcomeTitle: "🚀 Welcome to Nexus Task!",
+            welcomeSubtitle: "Please enter your nickname and email to join the global leaderboard:",
+            welcomeNicknamePlaceholder: "For example: Coding Champion 💻",
+            welcomeEmailPlaceholder: "Email address (example: name@gmail.com)",
+            welcomeHelpText: "💡 A confirmation link/code will be sent to confirm your email is valid.",
+            startAppBtnLabel: "Enter App 🎯",
+            quickReadyText: "Ready:",
+            quickWorkoutLabel: "Workout",
+            quickReadLabel: "Read",
+            quickReviewLabel: "Review",
+            quickWaterLabel: "Water",
+            quickWorkLabel: "Work",
+            filterAll: "All",
+            filterActive: "Active",
+            filterCompleted: "Completed",
+            searchBoxPlaceholder: "🔍 Search tasks...",
+            taskInputPlaceholder: "What task would you like to complete?",
+            categoryWork: "💼 Work",
+            categoryStudy: "📚 Study",
+            categoryPersonal: "🎯 Personal",
+            repeatNone: "No repeat",
+            repeatDaily: "Daily",
+            repeatWeekly: "Weekly",
+            addTaskBtnLabel: "Add New Task 🚀",
+            footAbout: "About Us",
+            footPrivacy: "Privacy Policy",
+            footContact: "Contact",
+            footBlog: "Blog",
+            lbTitle: "🌍 Global Leaderboard",
+            lbSub: "List of the real champions in the app:",
+            duelMainBtn: "⚔️ Challenge a Friend (1V1)",
+            activeDuelBtn: "⚔️ Active 1V1 Arena",
+            matchHistoryBtn: "📜 Match History",
+            duelModalTitle: "⚔️ Friend Challenge Room (30 Days)",
+            duelRulesSummary: "📌 Rules and stakes: joining the challenge requires at least 50 points/stars in your global balance. 50 points are deducted from both players (total = 100 points). The winner claims the points in the end.",
+            targetFriendInputPlaceholder: "Enter the friend's nickname precisely...",
+            sendDuelButton: "Send duel invite (deduct 50 points) 🎯",
+            colSelectTitle: "🎯 Choose Your Challenge Route",
+            colSelectSub: "Choose the task track you will commit to for the next 30 days against your opponent:",
+            col1Title: "📌 Route 1: Focus and Productivity Path (Pomodoro)",
+            col2Title: "📌 Route 2: Daily Discipline and Commitment Path",
+            col3Title: "📌 Route 3: Fast Challenges Path",
+            col4Title: "📌 Route 4: Habit Building and Self-Development Path",
+            col5Title: "📌 Route 5: Full and Varied Path",
+            col1Desc: "Contains 8 tasks for deep focus and time management sessions.",
+            col2Desc: "Contains 9 tasks that build iron discipline, waking up on time, and commitment.",
+            col3Desc: "Contains 7 quick but powerful challenges to complete in record time.",
+            col4Desc: "Contains 10 tasks to build positive habits, reading, and exercise.",
+            col5Desc: "Balanced mix of fitness, work, and personal growth tasks.",
+            confirmColumnBtnLabel: "Confirm Route 🚀",
+            waitingOpponentText: "⏳ Waiting for your opponent to choose a route...",
+            countdownSub: "Get ready! The challenge is about to begin for 30 days!",
+            arenaTitle: "⚔️ Live Duel Arena (30 Days)",
+            dailyResetNotice: "🔄 Completed marks are automatically reset every 24 hours to start a new cycle while keeping your accumulated points.",
+            forfeitDuelBtnLabel: "🏳️ Forfeit Duel (lose 50 points)",
+            historyModalTitle: "📜 Match History Archive",
+            inboxModalTitle: "📩 Incoming Requests & Messages",
+            guideTitle: "📖 Productivity & Time Management Guide",
+            guideDesc1: "Nexus Task is an integrated tool designed to organize your time and reduce procrastination through global strategies:",
+            guideTip1: "Pomodoro Technique:",
+            guideTip1Text: "Split your work into 25-minute focused sessions to avoid distraction.",
+            guideTip2: "Daily Commitment (Streak):",
+            guideTip2Text: "Complete at least one task every 24 hours to raise your score (+10 per task).",
+            inboxTitle: "Messages & Requests",
+            guideTitleBtn: "Productivity Guide",
+            themeTitle: "Change theme",
+            logoutTitle: "Log out",
+            confirmLogout: "Yes, log out",
+            cancelLogout: "Cancel",
+            logoutModalTitle: "🚪 Log out confirmation",
+            logoutModalText: "Are you sure you want to log out?"
         },
         fr: {
             addBtnDefault: "Ajouter une tâche",
@@ -214,6 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
             focusSessionEnd: "🎉 Session de concentration terminée! +30 points",
             startFocus: "Commencer",
             pauseFocus: "Pause",
+            resetFocus: "Réinitialiser",
             enterNicknameReq: "⚠️ Veuillez saisir un surnom pour participer au classement!",
             welcomeGreeting: "Bienvenue {name} dans Nexus Task! 🚀",
             welcomeEmailMsg: "📩 Un email de bienvenue a été envoyé!",
@@ -222,6 +371,8 @@ document.addEventListener('DOMContentLoaded', () => {
             duelAccepted: "Vous avez accepté le duel contre {name}! Le combat a commencé ⚔️",
             duelRejected: "La demande de duel a été refusée.",
             invalidFriend: "Veuillez saisir un surnom valide!",
+            invalidEmail: "L'adresse e-mail est invalide. Veuillez saisir une adresse e-mail valide.",
+            nicknameTaken: "Le surnom \"{name}\" est déjà utilisé.",
             selfDuelError: "Vous ne pouvez pas vous défier vous-même!",
             duelSent: "🚀 Invitation de duel envoyée à {name}!",
             editBtn: "Modifier",
@@ -229,7 +380,78 @@ document.addEventListener('DOMContentLoaded', () => {
             completedText: "Terminées",
             scoreText: "Points",
             levelText: "Niveau",
-            you: "Vous"
+            you: "Vous",
+            welcomeTitle: "🚀 Bienvenue dans Nexus Task!",
+            welcomeSubtitle: "Veuillez saisir votre surnom et votre email pour rejoindre le classement global :",
+            welcomeNicknamePlaceholder: "Par exemple : Champion du code 💻",
+            welcomeEmailPlaceholder: "Adresse email (exemple : nom@gmail.com)",
+            welcomeHelpText: "💡 Un lien/code de confirmation sera envoyé pour vérifier que l'email est valide.",
+            startAppBtnLabel: "Entrer dans l'application 🎯",
+            quickReadyText: "Prêt :",
+            quickWorkoutLabel: "Sport",
+            quickReadLabel: "Lecture",
+            quickReviewLabel: "Révision",
+            quickWaterLabel: "Eau",
+            quickWorkLabel: "Travail",
+            filterAll: "Tous",
+            filterActive: "Actives",
+            filterCompleted: "Terminées",
+            searchBoxPlaceholder: "🔍 Rechercher des tâches...",
+            taskInputPlaceholder: "Quelle tâche souhaitez-vous accomplir ?",
+            categoryWork: "💼 Travail",
+            categoryStudy: "📚 Études",
+            categoryPersonal: "🎯 Personnel",
+            repeatNone: "Sans répétition",
+            repeatDaily: "Quotidien",
+            repeatWeekly: "Hebdomadaire",
+            addTaskBtnLabel: "Ajouter une tâche 🚀",
+            footAbout: "À propos",
+            footPrivacy: "Politique de confidentialité",
+            footContact: "Contact",
+            footBlog: "Blog",
+            lbTitle: "🌍 Classement mondial",
+            lbSub: "Liste des vrais champions dans l'application :",
+            duelMainBtn: "⚔️ Défi entre amis (1V1)",
+            activeDuelBtn: "⚔️ Arena 1V1 active",
+            matchHistoryBtn: "📜 Historique des matchs",
+            duelModalTitle: "⚔️ Salle de défi entre amis (30 jours)",
+            duelRulesSummary: "📌 Règles et enjeux : rejoindre le défi nécessite au moins 50 points/étoiles dans votre solde global. 50 points sont déduits des deux joueurs (total = 100 points). Le gagnant récupère les points à la fin.",
+            targetFriendInputPlaceholder: "Saisissez précisément le surnom de l'ami...",
+            sendDuelButton: "Envoyer l'invitation (déduire 50 points) 🎯",
+            colSelectTitle: "🎯 Choisissez votre parcours de défi",
+            colSelectSub: "Choisissez la piste de tâches que vous allez suivre pendant 30 jours contre votre adversaire :",
+            col1Title: "📌 Parcours 1 : Concentration et productivité (Pomodoro)",
+            col2Title: "📌 Parcours 2 : Discipline quotidienne et engagement",
+            col3Title: "📌 Parcours 3 : Défis rapides",
+            col4Title: "📌 Parcours 4 : Habitudes et développement personnel",
+            col5Title: "📌 Parcours 5 : Parcours complet et varié",
+            col1Desc: "Contient 8 tâches pour les sessions de concentration profonde et la gestion du temps.",
+            col2Desc: "Contient 9 tâches qui développent la discipline, le réveil matinal et l'engagement.",
+            col3Desc: "Contient 7 défis rapides et puissants à réaliser en un temps record.",
+            col4Desc: "Contient 10 tâches pour renforcer les habitudes positives, la lecture et l'exercice.",
+            col5Desc: "Mélange équilibré de fitness, travail et développement personnel.",
+            confirmColumnBtnLabel: "Confirmer le parcours 🚀",
+            waitingOpponentText: "⏳ En attente du choix du parcours de l'adversaire...",
+            countdownSub: "Préparez-vous ! Le défi va commencer pour 30 jours !",
+            arenaTitle: "⚔️ Arena de duel en direct (30 jours)",
+            dailyResetNotice: "🔄 Les marques de réussite sont automatiquement réinitialisées toutes les 24 heures pour commencer un nouveau cycle tout en conservant vos points accumulés.",
+            forfeitDuelBtnLabel: "🏳️ Abandonner le défi (perdre 50 points)",
+            historyModalTitle: "📜 Historique des matchs",
+            inboxModalTitle: "📩 Boîte de messages et demandes",
+            guideTitle: "📖 Guide de productivité et de gestion du temps",
+            guideDesc1: "Nexus Task est un outil intégré conçu pour organiser votre temps et réduire la procrastination grâce à des stratégies globales :",
+            guideTip1: "Technique Pomodoro :",
+            guideTip1Text: "Divisez votre travail en sessions de 25 minutes de concentration pour éviter les distractions.",
+            guideTip2: "Engagement quotidien (Streak) :",
+            guideTip2Text: "Terminez au moins une tâche chaque 24 heures pour augmenter votre score (+10 par tâche).",
+            inboxTitle: "Messages & demandes",
+            guideTitleBtn: "Guide de productivité",
+            themeTitle: "Changer le thème",
+            logoutTitle: "Se déconnecter",
+            confirmLogout: "Oui, quitter",
+            cancelLogout: "Annuler",
+            logoutModalTitle: "🚪 Confirmation de déconnexion",
+            logoutModalText: "Êtes-vous sûr de vouloir vous déconnecter ?"
         }
     };
 
@@ -243,6 +465,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function normalizeNickname(value) {
         return String(value || '').trim().toLowerCase();
+    }
+
+    function isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim());
+    }
+
+    function emailMatchesNickname(email, nickname) {
+        const trimmedEmail = String(email || '').trim().toLowerCase();
+        const trimmedNickname = normalizeNickname(nickname).replace(/[^a-z0-9]/g, '');
+
+        if (!trimmedEmail || !trimmedNickname) return true;
+
+        const emailLocalPart = trimmedEmail.split('@')[0].replace(/[^a-z0-9]/g, '');
+        if (!emailLocalPart) return false;
+
+        return emailLocalPart.includes(trimmedNickname) || trimmedNickname.includes(emailLocalPart);
     }
 
     function syncLikedProfiles() {
@@ -274,13 +512,108 @@ document.addEventListener('DOMContentLoaded', () => {
         return usedNicknames.some(name => normalizeNickname(name) === normalizedCandidate);
     }
 
-    function applyLanguage(lang) {
-        currentLang = lang;
-        localStorage.setItem('nexus_lang', lang);
-        if (document.documentElement) {
-            document.documentElement.setAttribute('dir', lang === 'en' ? 'ltr' : 'rtl');
-            document.documentElement.setAttribute('lang', lang);
-        }
+    function updateStaticTexts() {
+        const textBindings = {
+            welcTitle: 'welcomeTitle',
+            welcSub: 'welcomeSubtitle',
+            welcomeNickname: 'welcomeNicknamePlaceholder',
+            welcomeEmail: 'welcomeEmailPlaceholder',
+            welcHelp: 'welcomeHelpText',
+            startAppBtn: 'startAppBtnLabel',
+            quickReadyText: 'quickReadyText',
+            filterAll: 'filterAll',
+            filterActive: 'filterActive',
+            filterCompleted: 'filterCompleted',
+            taskInput: 'taskInputPlaceholder',
+            searchBox: 'searchBoxPlaceholder',
+            optWork: 'categoryWork',
+            optStudy: 'categoryStudy',
+            optPersonal: 'categoryPersonal',
+            repNone: 'repeatNone',
+            repDaily: 'repeatDaily',
+            repWeekly: 'repeatWeekly',
+            footAbout: 'footAbout',
+            footPrivacy: 'footPrivacy',
+            footContact: 'footContact',
+            footBlog: 'footBlog',
+            lbTitle: 'lbTitle',
+            lbSub: 'lbSub',
+            openDuelModalBtn: 'duelMainBtn',
+            openActiveDuelArenaBtn: 'activeDuelBtn',
+            viewMatchHistoryBtn: 'matchHistoryBtn',
+            logoutModalTitle: 'logoutModalTitle',
+            logoutModalText: 'logoutModalText',
+            confirmLogoutBtn: 'confirmLogout',
+            cancelLogoutBtn: 'cancelLogout',
+            duelModalTitle: 'duelModalTitle',
+            duelRulesSummary: 'duelRulesSummary',
+            targetFriendInput: 'targetFriendInputPlaceholder',
+            sendDuelRequestBtn: 'sendDuelButton',
+            colSelectTitle: 'colSelectTitle',
+            colSelectSub: 'colSelectSub',
+            col1Title: 'col1Title',
+            col2Title: 'col2Title',
+            col3Title: 'col3Title',
+            col4Title: 'col4Title',
+            col5Title: 'col5Title',
+            col1Desc: 'col1Desc',
+            col2Desc: 'col2Desc',
+            col3Desc: 'col3Desc',
+            col4Desc: 'col4Desc',
+            col5Desc: 'col5Desc',
+            confirmColumnBtn: 'confirmColumnBtnLabel',
+            waitingOpponentText: 'waitingOpponentText',
+            countdownSub: 'countdownSub',
+            arenaTitle: 'arenaTitle',
+            dailyResetNotice: 'dailyResetNotice',
+            forfeitDuelBtn: 'forfeitDuelBtnLabel',
+            historyModalTitle: 'historyModalTitle',
+            inboxModalTitle: 'inboxModalTitle',
+            guideTitle: 'guideTitle',
+            guideDesc1: 'guideDesc1',
+            guideTip1: 'guideTip1',
+            guideTip2: 'guideTip2',
+            guideTip1Text: 'guideTip1Text',
+            guideTip2Text: 'guideTip2Text',
+            openInboxBtn: 'inboxTitle',
+            openGuideBtn: 'guideTitleBtn',
+            themeToggle: 'themeTitle',
+            logoutBtn: 'logoutTitle'
+        };
+
+        Object.entries(textBindings).forEach(([id, key]) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+
+            const value = t(key);
+
+            if (id === 'welcomeNickname' || id === 'welcomeEmail' || id === 'taskInput' || id === 'targetFriendInput' || id === 'searchBox') {
+                el.placeholder = value;
+            } else if (el.tagName === 'BUTTON' || el.tagName === 'SPAN' || el.tagName === 'H2' || el.tagName === 'H3' || el.tagName === 'H4' || el.tagName === 'P' || el.tagName === 'A' || el.tagName === 'LI') {
+                el.textContent = value;
+            }
+        });
+
+        const templateLabels = [
+            ['tmpl1', 'quickWorkoutLabel'],
+            ['tmpl2', 'quickReadLabel'],
+            ['tmpl3', 'quickReviewLabel'],
+            ['tmpl4', 'quickWaterLabel'],
+            ['tmpl5', 'quickWorkLabel']
+        ];
+
+        templateLabels.forEach(([id, key]) => {
+            const el = document.getElementById(id);
+            if (el) {
+                const emoji = id === 'tmpl1' ? '🏃‍♂️ ' : id === 'tmpl2' ? '📚 ' : id === 'tmpl3' ? '📝 ' : id === 'tmpl4' ? '💧 ' : '💼 ';
+                el.textContent = `${emoji}${t(key)}`;
+            }
+        });
+
+        if (openInboxBtn) openInboxBtn.title = t('inboxTitle');
+        if (openGuideBtn) openGuideBtn.title = t('guideTitleBtn');
+        if (themeToggle) themeToggle.title = t('themeTitle');
+        if (logoutBtn) logoutBtn.title = t('logoutTitle');
 
         if (addBtn) {
             addBtn.textContent = editIndex === null ? t('addBtnDefault') : t('addBtnUpdate');
@@ -289,7 +622,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pomoStart) {
             pomoStart.textContent = isRunning ? t('pauseFocus') : t('startFocus');
         }
-        
+
+        if (pomoReset) {
+            pomoReset.textContent = t('resetFocus');
+        }
+    }
+
+    function applyLanguage(lang) {
+        currentLang = lang;
+        localStorage.setItem('nexus_lang', lang);
+        if (document.documentElement) {
+            document.documentElement.setAttribute('dir', lang === 'en' ? 'ltr' : 'rtl');
+            document.documentElement.setAttribute('lang', lang);
+        }
+
+        updateStaticTexts();
         saveAndRender();
     }
 
@@ -410,8 +757,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            if (email && !isValidEmail(email)) {
+                showToast(t('invalidEmail'), '#ef4444');
+                return;
+            }
+
+            if (email && !emailMatchesNickname(email, nickname)) {
+                showToast(t('invalidEmail'), '#ef4444');
+                return;
+            }
+
             if (isNicknameTaken(nickname) && normalizeNickname(nickname) !== normalizeNickname(myNickname)) {
-                showToast(currentLang === 'en' ? `The nickname "${nickname}" is already used.` : `هذا اللقب "${nickname}" مستخدم بالفعل.`, '#ef4444');
+                showToast(t('nicknameTaken', { name: nickname }), '#ef4444');
                 return;
             }
 
@@ -620,11 +977,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const cleanName = (user.name || '').replace(/\s*\(.*?\)\s*$/, '').trim();
                 const normalizedTarget = normalizeNickname(cleanName);
                 const alreadyLiked = !user.me && likedSet.has(normalizedTarget);
+                const rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : 'rank-default';
                 const likeButton = user.me
                     ? `<span style="font-size:11px; opacity:0.8;">❤️ ${user.likes}</span>`
                     : `<button type="button" class="like-btn" data-user="${escapeHTML(cleanName)}" ${alreadyLiked ? 'disabled' : ''} style="background:${alreadyLiked ? 'rgba(16,185,129,0.12)' : 'transparent'}; border:1px solid var(--border-color); border-radius:999px; padding:4px 8px; cursor:${alreadyLiked ? 'default' : 'pointer'}; color:var(--primary-color); font-size:11px; opacity:${alreadyLiked ? 0.8 : 1};">❤️ ${user.likes}</button>`;
 
-                li.className = `leaderboard-item ${user.me ? 'me' : ''}`;
+                li.className = `leaderboard-item ${user.me ? 'me' : ''} ${rankClass}`;
                 li.innerHTML = `
                     <span>#${index + 1} ${escapeHTML(user.name)}</span>
                     <div style="display:flex; align-items:center; gap:8px;">
