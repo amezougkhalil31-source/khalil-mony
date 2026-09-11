@@ -59,9 +59,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const activeDuelArenaModal = document.getElementById('activeDuelArenaModal');
     const closeArenaModal = document.getElementById('closeArenaModal');
     const forfeitDuelBtn = document.getElementById('forfeitDuelBtn');
+    const p1ScoreDisplay = document.getElementById('p1ScoreDisplay');
+    const p2ScoreDisplay = document.getElementById('p2ScoreDisplay');
+    const arenaTimerDisplay = document.getElementById('arenaTimerDisplay');
+    const activeTasksContainer = document.getElementById('activeTasksContainer');
 
     // عناصر تحدي الأصدقاء (1 vs 1)
     const openDuelModalBtn = document.getElementById('openDuelModalBtn');
+    const openActiveDuelArenaBtn = document.getElementById('openActiveDuelArenaBtn');
     const closeDuelModal = document.getElementById('closeDuelModal');
     const duelModal = document.getElementById('duelModal');
     const targetFriendInput = document.getElementById('targetFriendInput');
@@ -109,6 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeDuels = safeJSONParse('nexus_active_duels', []);
     let matchHistory = safeJSONParse('nexus_match_history', []);
     let usedNicknames = safeJSONParse('nexus_used_nicknames', []);
+    let likedProfiles = safeJSONParse('nexus_liked_profiles', []);
 
     // ضبط المظهر الأولي
     const savedTheme = localStorage.getItem('nexus_theme') || 'light';
@@ -237,6 +243,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function normalizeNickname(value) {
         return String(value || '').trim().toLowerCase();
+    }
+
+    function syncLikedProfiles() {
+        likedProfiles = [...new Set(likedProfiles
+            .map(name => normalizeNickname(name))
+            .filter(Boolean))];
+        localStorage.setItem('nexus_liked_profiles', JSON.stringify(likedProfiles));
     }
 
     function syncUsedNicknames() {
@@ -554,6 +567,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('nexus_streak', String(streak));
         renderTasks(searchBox ? searchBox.value : '');
         updateLeaderboard();
+        updateActiveDuelButton();
     }
 
     function calculateLevel(xp) {
@@ -570,8 +584,11 @@ document.addEventListener('DOMContentLoaded', () => {
             me: !!item.me
         }));
 
+        syncLikedProfiles();
+        const likedSet = new Set(likedProfiles);
         const labelYou = `(${t('you')})`;
         const myIndex = leaderboardData.findIndex(item => item.me || (item.name && item.name.toLowerCase().includes(myNickname.toLowerCase())));
+
         if (myIndex !== -1) {
             leaderboardData[myIndex].score = score;
             leaderboardData[myIndex].name = `${myNickname} ${labelYou}`;
@@ -601,13 +618,18 @@ document.addEventListener('DOMContentLoaded', () => {
             leaderboardData.forEach((user, index) => {
                 const li = document.createElement('li');
                 const cleanName = (user.name || '').replace(/\s*\(.*?\)\s*$/, '').trim();
-                const likeLabel = user.me ? `<span style="font-size:11px; opacity:0.8;">❤️ ${user.likes}</span>` : `<button type="button" class="like-btn" data-user="${cleanName}" style="background:transparent; border:1px solid var(--border-color); border-radius:999px; padding:4px 8px; cursor:pointer; color:var(--primary-color); font-size:11px;">❤️ ${user.likes}</button>`;
+                const normalizedTarget = normalizeNickname(cleanName);
+                const alreadyLiked = !user.me && likedSet.has(normalizedTarget);
+                const likeButton = user.me
+                    ? `<span style="font-size:11px; opacity:0.8;">❤️ ${user.likes}</span>`
+                    : `<button type="button" class="like-btn" data-user="${escapeHTML(cleanName)}" ${alreadyLiked ? 'disabled' : ''} style="background:${alreadyLiked ? 'rgba(16,185,129,0.12)' : 'transparent'}; border:1px solid var(--border-color); border-radius:999px; padding:4px 8px; cursor:${alreadyLiked ? 'default' : 'pointer'}; color:var(--primary-color); font-size:11px; opacity:${alreadyLiked ? 0.8 : 1};">❤️ ${user.likes}</button>`;
+
                 li.className = `leaderboard-item ${user.me ? 'me' : ''}`;
                 li.innerHTML = `
                     <span>#${index + 1} ${escapeHTML(user.name)}</span>
                     <div style="display:flex; align-items:center; gap:8px;">
                         <span style="font-weight:bold; color:var(--primary-color);">${user.score} ⭐</span>
-                        ${likeLabel}
+                        ${likeButton}
                     </div>
                 `;
                 leaderboardList.appendChild(li);
@@ -616,22 +638,74 @@ document.addEventListener('DOMContentLoaded', () => {
             leaderboardList.querySelectorAll('.like-btn').forEach(button => {
                 button.addEventListener('click', () => {
                     const targetName = button.getAttribute('data-user');
-                    if (!targetName || targetName === myNickname) return;
+                    const normalizedTarget = normalizeNickname(targetName);
+
+                    if (!targetName || normalizedTarget === normalizeNickname(myNickname)) return;
+
+                    if (likedProfiles.some(profile => normalizeNickname(profile) === normalizedTarget)) {
+                        showToast(currentLang === 'en' ? `You already liked ${targetName}.` : `سبق لك إعجابك بـ ${targetName}.`, '#f59e0b');
+                        return;
+                    }
 
                     leaderboardData = leaderboardData.map(user => {
                         const currentName = (user.name || '').replace(/\s*\(.*?\)\s*$/, '').trim();
-                        if (currentName === targetName) {
+                        if (normalizeNickname(currentName) === normalizedTarget) {
                             return { ...user, likes: (Number(user.likes) || 0) + 1 };
                         }
                         return user;
                     });
 
+                    likedProfiles.push(normalizedTarget);
+                    syncLikedProfiles();
                     localStorage.setItem('nexus_leaderboard', JSON.stringify(leaderboardData));
                     updateLeaderboard();
                     showToast(currentLang === 'en' ? `You liked ${targetName}.` : `أعجبتك ${targetName}.`, '#10b981');
                 });
             });
         }
+    }
+
+    function updateActiveDuelButton() {
+        if (openActiveDuelArenaBtn) {
+            openActiveDuelArenaBtn.style.display = activeDuels.length > 0 ? 'block' : 'none';
+        }
+    }
+
+    function openActiveDuelArena() {
+        if (!activeDuelArenaModal || activeDuels.length === 0) return;
+
+        const duel = activeDuels[activeDuels.length - 1];
+        const opponent = duel?.opponent || 'Opponent';
+
+        if (p1ScoreDisplay) {
+            p1ScoreDisplay.textContent = `${currentLang === 'en' ? 'You' : 'أنت'}: ${score} ${currentLang === 'en' ? 'points' : 'نقطة'}`;
+        }
+
+        if (p2ScoreDisplay) {
+            p2ScoreDisplay.textContent = `${opponent}: 0 ${currentLang === 'en' ? 'points' : 'نقطة'}`;
+        }
+
+        if (arenaTimerDisplay) {
+            arenaTimerDisplay.textContent = `${currentLang === 'en' ? '⏱️ Remaining' : '⏱️ المتبقي'}: 30 ${currentLang === 'en' ? 'days' : 'يوم'} (${currentLang === 'en' ? 'Round' : 'الدورة'} 1/30)`;
+        }
+
+        if (activeTasksContainer) {
+            activeTasksContainer.innerHTML = `
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <div style="padding:10px; border-radius:10px; background:rgba(79,70,229,0.06); border:1px solid rgba(79,70,229,0.15);">
+                        <strong style="display:block; margin-bottom:4px;">${escapeHTML(myNickname || 'You')}</strong>
+                        <div style="font-size:12px; opacity:0.8;">${currentLang === 'en' ? 'Your current tasks are shown below.' : 'المهام الحالية لديك تظهر أدناه.'}</div>
+                    </div>
+                    <div style="padding:10px; border-radius:10px; background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.15);">
+                        <strong style="display:block; margin-bottom:4px;">${escapeHTML(opponent)}</strong>
+                        <div style="font-size:12px; opacity:0.8;">${currentLang === 'en' ? 'The duel started and the score is being tracked live.' : 'بدأ التحدي ويتم تتبع النتيجة مباشرة.'}</div>
+                    </div>
+                    <div style="font-size:12px; opacity:0.8; margin-top:4px;">${tasks.length > 0 ? tasks.map(task => `• ${escapeHTML(task.text)}`).join('<br>') : (currentLang === 'en' ? 'No task yet.' : 'لا توجد مهام بعد.')}</div>
+                </div>
+            `;
+        }
+
+        activeDuelArenaModal.classList.add('active');
     }
 
     function renderTasks(filterText = '') {
@@ -955,6 +1029,8 @@ document.addEventListener('DOMContentLoaded', () => {
         myDuelRequests = myDuelRequests.filter(r => r.sender !== senderName);
         localStorage.setItem('nexus_duel_requests', JSON.stringify(myDuelRequests));
         renderDuelRequests();
+        updateActiveDuelButton();
+        openActiveDuelArena();
     }
 
     function rejectDuel(index) {
@@ -968,6 +1044,12 @@ document.addEventListener('DOMContentLoaded', () => {
         openDuelModalBtn.addEventListener('click', () => {
             duelModal.classList.add('active');
             renderDuelRequests();
+        });
+    }
+
+    if (openActiveDuelArenaBtn) {
+        openActiveDuelArenaBtn.addEventListener('click', () => {
+            openActiveDuelArena();
         });
     }
 
@@ -1172,10 +1254,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (forfeitDuelBtn) {
         forfeitDuelBtn.addEventListener('click', () => {
+            const duelToRemove = activeDuels[activeDuels.length - 1];
+            const opponentName = duelToRemove?.opponent || 'Opponent';
+
             if (activeDuelArenaModal) activeDuelArenaModal.classList.remove('active');
+
+            if (duelToRemove) {
+                activeDuels = activeDuels.filter(duel => duel !== duelToRemove);
+                localStorage.setItem('nexus_active_duels', JSON.stringify(activeDuels));
+            }
+
             score = Math.max(0, score - 50);
+
+            const normalizedOpponent = normalizeNickname(opponentName);
+            const opponentEntryIndex = leaderboardData.findIndex(item => {
+                const currentName = (item.name || '').replace(/\s*\(.*?\)\s*$/, '').trim();
+                return normalizeNickname(currentName) === normalizedOpponent;
+            });
+
+            if (opponentEntryIndex !== -1) {
+                leaderboardData[opponentEntryIndex].score = (Number(leaderboardData[opponentEntryIndex].score) || 0) + 50;
+            } else {
+                leaderboardData.push({ name: opponentName, score: 50, me: false, likes: 0 });
+            }
+
+            leaderboardData = leaderboardData
+                .map(item => ({
+                    ...item,
+                    likes: Number(item.likes) || 0,
+                    score: Number(item.score) || 0
+                }))
+                .filter(item => item.name && item.name.trim() !== '');
+
+            leaderboardData.sort((a, b) => b.score - a.score);
+            localStorage.setItem('nexus_leaderboard', JSON.stringify(leaderboardData));
+            updateActiveDuelButton();
             saveAndRender();
-            showToast(currentLang === 'en' ? 'You forfeited the duel and lost 50 points.' : 'انسحبت من التحدي وفقدت 50 نقطة.', '#ef4444');
+            showToast(currentLang === 'en' ? 'You forfeited the duel. The opponent wins 50 points.' : 'انسحبت من التحدي. الخصم يفوز بـ 50 نقطة.', '#ef4444');
         });
     }
 
@@ -1186,4 +1301,5 @@ document.addEventListener('DOMContentLoaded', () => {
     checkOnboarding();
     checkDailyStreakAndDeterioration();
     renderDuelRequests();
+    updateActiveDuelButton();
 });
