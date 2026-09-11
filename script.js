@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const repeatSelect = document.getElementById('repeatSelect');
     const addBtn = document.getElementById('addBtn');
     const taskList = document.getElementById('taskList');
+    const mainAppLayout = document.getElementById('mainAppLayout');
     const statsText = document.getElementById('statsText');
     const scoreText = document.getElementById('scoreText');
     const levelText = document.getElementById('levelText');
@@ -32,6 +33,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const welcomeEmail = document.getElementById('welcomeEmail');
     const startAppBtn = document.getElementById('startAppBtn');
 
+    const logoutBtn = document.getElementById('logoutBtn');
+    const logoutModal = document.getElementById('logoutModal');
+    const confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
+    const cancelLogoutBtn = document.getElementById('cancelLogoutBtn');
+    const openInboxBtn = document.getElementById('openInboxBtn');
+    const inboxModal = document.getElementById('inboxModal');
+    const closeInboxModal = document.getElementById('closeInboxModal');
+    const viewMatchHistoryBtn = document.getElementById('viewMatchHistoryBtn');
+    const matchHistoryModal = document.getElementById('matchHistoryModal');
+    const closeMatchHistoryModal = document.getElementById('closeMatchHistoryModal');
+    const historyList = document.getElementById('historyList');
+
     // عناصر الدليل التعليمي وقوالب المهام
     const openGuideBtn = document.getElementById('openGuideBtn');
     const closeGuideBtn = document.getElementById('closeGuideBtn');
@@ -46,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const targetFriendInput = document.getElementById('targetFriendInput');
     const sendDuelRequestBtn = document.getElementById('sendDuelRequestBtn');
     const duelRequestsList = document.getElementById('duelRequestsList');
-    const friendAutocompleteList = document.getElementById('friendAutocompleteList');
+    const autocompleteList = document.getElementById('autocompleteList');
 
     // عناصر مؤقت البومودورو
     const pomoTimer = document.getElementById('pomoTimer');
@@ -249,25 +262,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
-    // 6. إعدادات التسجيل الأول (Onboarding & Modal) - مصححة تماماً
+    // 6. إعدادات التسجيل الأول (Onboarding & Modal)
     // ==========================================
     function checkOnboarding() {
-        if (!welcomeModal) return;
-        if (myNickname && myNickname.trim() !== '') {
-            welcomeModal.style.display = 'none';
-            welcomeModal.style.visibility = 'hidden';
-            welcomeModal.style.opacity = '0';
-            welcomeModal.style.pointerEvents = 'none';
-            welcomeModal.classList.remove('active');
-            if (body) body.style.overflow = 'auto';
-        } else {
-            welcomeModal.style.display = 'flex';
-            welcomeModal.style.visibility = 'visible';
-            welcomeModal.style.opacity = '1';
-            welcomeModal.style.pointerEvents = 'auto';
-            welcomeModal.classList.add('active');
-            if (body) body.style.overflow = 'hidden';
+        const hasNickname = !!(myNickname && myNickname.trim() !== '');
+
+        if (welcomeModal) {
+            if (hasNickname) {
+                welcomeModal.style.display = 'none';
+                welcomeModal.style.visibility = 'hidden';
+                welcomeModal.style.opacity = '0';
+                welcomeModal.style.pointerEvents = 'none';
+                welcomeModal.classList.remove('active');
+            } else {
+                welcomeModal.style.display = 'flex';
+                welcomeModal.style.visibility = 'visible';
+                welcomeModal.style.opacity = '1';
+                welcomeModal.style.pointerEvents = 'auto';
+                welcomeModal.classList.add('active');
+            }
         }
+
+        if (mainAppLayout) {
+            mainAppLayout.style.display = hasNickname ? 'grid' : 'none';
+        }
+
+        if (body) body.style.overflow = hasNickname ? 'auto' : 'hidden';
     }
 
     if (startAppBtn) {
@@ -297,6 +317,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 welcomeModal.style.opacity = '0';
                 welcomeModal.style.pointerEvents = 'none';
                 welcomeModal.classList.remove('active');
+            }
+            if (mainAppLayout) {
+                mainAppLayout.style.display = 'grid';
             }
             if (body) body.style.overflow = 'auto';
 
@@ -747,18 +770,18 @@ document.addEventListener('DOMContentLoaded', () => {
         closeDuelModal.addEventListener('click', () => duelModal.classList.remove('active'));
     }
 
-    if (targetFriendInput && friendAutocompleteList) {
+    if (targetFriendInput && autocompleteList) {
         targetFriendInput.addEventListener('input', (e) => {
             const val = e.target.value.trim().toLowerCase();
-            friendAutocompleteList.innerHTML = '';
+            autocompleteList.innerHTML = '';
             if (!val) {
-                friendAutocompleteList.style.display = 'none';
+                autocompleteList.style.display = 'none';
                 return;
             }
 
             const matches = leaderboardData.filter(u => u.name && u.name.toLowerCase().includes(val) && !u.me);
             if (matches.length > 0) {
-                friendAutocompleteList.style.display = 'block';
+                autocompleteList.style.display = 'block';
                 matches.forEach(m => {
                     const cleanName = m.name.replace(` (${t('you')})`, '').replace(' (أنت)', '');
                     const li = document.createElement('li');
@@ -766,18 +789,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     li.textContent = cleanName;
                     li.addEventListener('click', () => {
                         targetFriendInput.value = cleanName;
-                        friendAutocompleteList.style.display = 'none';
+                        autocompleteList.style.display = 'none';
                     });
-                    friendAutocompleteList.appendChild(li);
+                    autocompleteList.appendChild(li);
                 });
             } else {
-                friendAutocompleteList.style.display = 'none';
+                autocompleteList.style.display = 'none';
             }
         });
 
         document.addEventListener('click', (e) => {
             if (e.target !== targetFriendInput) {
-                friendAutocompleteList.style.display = 'none';
+                autocompleteList.style.display = 'none';
             }
         });
     }
