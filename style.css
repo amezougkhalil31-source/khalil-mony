@@ -44,8 +44,8 @@ body {
     min-height: 100vh;
     display: flex;
     justify-content: center;
-    align-items: center;
-    padding: 20px;
+    align-items: flex-start;
+    padding: 30px 20px 120px;
     transition: background 0.3s, color 0.3s;
 }
 
@@ -119,6 +119,7 @@ body {
     width: 100%;
     max-width: 1150px;
     align-items: start;
+    padding-bottom: 60px;
 }
 
 .container {

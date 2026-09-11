@@ -108,6 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let myDuelRequests = safeJSONParse('nexus_duel_requests', []);
     let activeDuels = safeJSONParse('nexus_active_duels', []);
     let matchHistory = safeJSONParse('nexus_match_history', []);
+    let usedNicknames = safeJSONParse('nexus_used_nicknames', []);
 
     // ضبط المظهر الأولي
     const savedTheme = localStorage.getItem('nexus_theme') || 'light';
@@ -139,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
             taskUpdated: "تم تحديث المهمة بنجاح!",
             taskDeleted: "تم حذف المهمة",
             allCleared: "تم مسح جميع المهام",
-            completeSuccess: "تم إنجاز المهمة بنجاح! +20 ⭐",
+            completeSuccess: "تم إنجاز المهمة بنجاح! +10 ⭐",
             expiredAlert: "⚠️ انتهاء موعد:",
             dueAlert: "⏰ حان موعد المهمة:",
             focusSessionEnd: "🎉 انتهت جلسة التركيز! +30 نقطة",
@@ -170,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
             taskUpdated: "Task updated successfully!",
             taskDeleted: "Task deleted",
             allCleared: "All tasks cleared",
-            completeSuccess: "Task completed! +20 ⭐",
+            completeSuccess: "Task completed! +10 ⭐",
             expiredAlert: "⚠️ Expired:",
             dueAlert: "⏰ Task Due:",
             focusSessionEnd: "🎉 Focus session finished! +30 points",
@@ -201,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
             taskUpdated: "Tâche mise à jour avec succès!",
             taskDeleted: "Tâche supprimée",
             allCleared: "Toutes les tâches ont été supprimées",
-            completeSuccess: "Tâche terminée! +20 ⭐",
+            completeSuccess: "Tâche terminée! +10 ⭐",
             expiredAlert: "⚠️ Expirée :",
             dueAlert: "⏰ Tâche à échéance :",
             focusSessionEnd: "🎉 Session de concentration terminée! +30 points",
@@ -232,6 +233,32 @@ document.addEventListener('DOMContentLoaded', () => {
             text = text.replace(`{${p}}`, params[p]);
         });
         return text;
+    }
+
+    function normalizeNickname(value) {
+        return String(value || '').trim().toLowerCase();
+    }
+
+    function syncUsedNicknames() {
+        const namesFromLeaderboard = leaderboardData
+            .map(item => {
+                if (!item || !item.name) return '';
+                return item.name.replace(/\s*\(.*?\)\s*$/, '').trim();
+            })
+            .filter(Boolean);
+
+        const combined = [...new Set([...usedNicknames, ...namesFromLeaderboard])];
+        usedNicknames = combined;
+        localStorage.setItem('nexus_used_nicknames', JSON.stringify(combined));
+    }
+
+    function isNicknameTaken(candidateNick) {
+        const normalizedCandidate = normalizeNickname(candidateNick);
+        if (!normalizedCandidate) return false;
+
+        syncUsedNicknames();
+
+        return usedNicknames.some(name => normalizeNickname(name) === normalizedCandidate);
     }
 
     function applyLanguage(lang) {
@@ -370,8 +397,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            if (isNicknameTaken(nickname) && normalizeNickname(nickname) !== normalizeNickname(myNickname)) {
+                showToast(currentLang === 'en' ? `The nickname "${nickname}" is already used.` : `هذا اللقب "${nickname}" مستخدم بالفعل.`, '#ef4444');
+                return;
+            }
+
             myNickname = nickname;
             localStorage.setItem('nexus_nickname', myNickname);
+            syncUsedNicknames();
+            if (!usedNicknames.includes(myNickname)) {
+                usedNicknames.push(myNickname);
+                localStorage.setItem('nexus_used_nicknames', JSON.stringify(usedNicknames));
+            }
 
             if (email) {
                 myEmail = email;
@@ -415,14 +452,11 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.removeItem('nexus_nickname');
             localStorage.removeItem('nexus_email');
 
-            leaderboardData = leaderboardData.filter(item => !item.me);
-            localStorage.setItem('nexus_leaderboard', JSON.stringify(leaderboardData));
-
             if (logoutModal) logoutModal.classList.remove('active');
             checkOnboarding();
             renderTasks(searchBox ? searchBox.value : '');
             updateLeaderboard();
-            showToast('Logged out successfully', '#64748b');
+            showToast(currentLang === 'en' ? 'Logged out successfully' : 'تم تسجيل الخروج بنجاح', '#64748b');
         });
     }
 
@@ -528,15 +562,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateLeaderboard() {
         if (!myNickname) return;
-        
+
+        leaderboardData = safeJSONParse('nexus_leaderboard', []).map(item => ({
+            ...item,
+            likes: Number(item.likes) || 0,
+            score: Number(item.score) || 0,
+            me: !!item.me
+        }));
+
         const labelYou = `(${t('you')})`;
-        const myIndex = leaderboardData.findIndex(item => item.me || (item.name && item.name.includes(myNickname)));
+        const myIndex = leaderboardData.findIndex(item => item.me || (item.name && item.name.toLowerCase().includes(myNickname.toLowerCase())));
         if (myIndex !== -1) {
             leaderboardData[myIndex].score = score;
             leaderboardData[myIndex].name = `${myNickname} ${labelYou}`;
+            leaderboardData[myIndex].me = true;
         } else {
-            leaderboardData.push({ name: `${myNickname} ${labelYou}`, score: score, me: true });
+            leaderboardData.push({ name: `${myNickname} ${labelYou}`, score: score, me: true, likes: 0 });
         }
+
+        leaderboardData = leaderboardData
+            .map(item => ({
+                ...item,
+                likes: Number(item.likes) || 0,
+                score: Number(item.score) || 0
+            }))
+            .filter(item => item.name && item.name.trim() !== '');
 
         leaderboardData.sort((a, b) => b.score - a.score);
         localStorage.setItem('nexus_leaderboard', JSON.stringify(leaderboardData));
@@ -550,12 +600,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
             leaderboardData.forEach((user, index) => {
                 const li = document.createElement('li');
+                const cleanName = (user.name || '').replace(/\s*\(.*?\)\s*$/, '').trim();
+                const likeLabel = user.me ? `<span style="font-size:11px; opacity:0.8;">❤️ ${user.likes}</span>` : `<button type="button" class="like-btn" data-user="${cleanName}" style="background:transparent; border:1px solid var(--border-color); border-radius:999px; padding:4px 8px; cursor:pointer; color:var(--primary-color); font-size:11px;">❤️ ${user.likes}</button>`;
                 li.className = `leaderboard-item ${user.me ? 'me' : ''}`;
                 li.innerHTML = `
                     <span>#${index + 1} ${escapeHTML(user.name)}</span>
-                    <span style="font-weight:bold; color:var(--primary-color);">${user.score} ⭐</span>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-weight:bold; color:var(--primary-color);">${user.score} ⭐</span>
+                        ${likeLabel}
+                    </div>
                 `;
                 leaderboardList.appendChild(li);
+            });
+
+            leaderboardList.querySelectorAll('.like-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetName = button.getAttribute('data-user');
+                    if (!targetName || targetName === myNickname) return;
+
+                    leaderboardData = leaderboardData.map(user => {
+                        const currentName = (user.name || '').replace(/\s*\(.*?\)\s*$/, '').trim();
+                        if (currentName === targetName) {
+                            return { ...user, likes: (Number(user.likes) || 0) + 1 };
+                        }
+                        return user;
+                    });
+
+                    localStorage.setItem('nexus_leaderboard', JSON.stringify(leaderboardData));
+                    updateLeaderboard();
+                    showToast(currentLang === 'en' ? `You liked ${targetName}.` : `أعجبتك ${targetName}.`, '#10b981');
+                });
             });
         }
     }
@@ -609,13 +683,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('nexus_last_active', String(lastActiveTime));
 
                 if (tasks[originalIndex].completed) {
-                    score += 20;
+                    score += 10;
                     streak += 1;
                     playSound('complete');
                     triggerLiveBot('good');
                     showToast(t('completeSuccess'));
                 } else {
-                    score = Math.max(0, score - 20);
+                    score = Math.max(0, score - 10);
                     streak = Math.max(0, streak - 1);
                 }
                 saveAndRender();
