@@ -249,16 +249,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
-    // 6. إعدادات التسجيل الأول (Onboarding & Modal)
+    // 6. إعدادات التسجيل الأول (Onboarding & Modal) - مصححة تماماً
     // ==========================================
     function checkOnboarding() {
         if (!welcomeModal) return;
         if (myNickname && myNickname.trim() !== '') {
             welcomeModal.style.display = 'none';
+            welcomeModal.style.visibility = 'hidden';
+            welcomeModal.style.opacity = '0';
+            welcomeModal.style.pointerEvents = 'none';
             welcomeModal.classList.remove('active');
             if (body) body.style.overflow = 'auto';
         } else {
             welcomeModal.style.display = 'flex';
+            welcomeModal.style.visibility = 'visible';
+            welcomeModal.style.opacity = '1';
+            welcomeModal.style.pointerEvents = 'auto';
             welcomeModal.classList.add('active');
             if (body) body.style.overflow = 'hidden';
         }
@@ -287,6 +293,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (welcomeModal) {
                 welcomeModal.style.display = 'none';
+                welcomeModal.style.visibility = 'hidden';
+                welcomeModal.style.opacity = '0';
+                welcomeModal.style.pointerEvents = 'none';
                 welcomeModal.classList.remove('active');
             }
             if (body) body.style.overflow = 'auto';
@@ -828,7 +837,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (searchBox) {
+    if(searchBox) {
         searchBox.addEventListener('input', (e) => { 
             renderTasks(e.target.value); 
         });
