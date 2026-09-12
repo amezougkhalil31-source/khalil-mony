@@ -485,6 +485,61 @@ document.addEventListener('DOMContentLoaded', () => {
         return emailLocalPart.includes(trimmedNickname) || trimmedNickname.includes(emailLocalPart);
     }
 
+    function updateEmailVerificationNotice() {
+        const notice = document.getElementById('emailVerifyNotice');
+        if (!notice) return;
+
+        const email = (welcomeEmail ? welcomeEmail.value.trim() : '').toLowerCase();
+        const nickname = welcomeNickname ? welcomeNickname.value.trim() : '';
+
+        if (!email) {
+            notice.style.display = 'none';
+            notice.textContent = '';
+            return;
+        }
+
+        if (!isValidEmail(email)) {
+            notice.style.display = 'block';
+            notice.style.color = '#ef4444';
+            notice.textContent = currentLang === 'en'
+                ? '⚠️ Email format is invalid. Please check it.'
+                : currentLang === 'fr'
+                    ? '⚠️ Le format de l’e-mail est invalide. Vérifiez-le.'
+                    : '⚠️ صيغة البريد الإلكتروني غير صحيحة. يرجى التحقق منها.';
+            return;
+        }
+
+        if (!nickname) {
+            notice.style.display = 'block';
+            notice.style.color = '#d97706';
+            notice.textContent = currentLang === 'en'
+                ? 'ℹ️ Enter a nickname to verify the email match.'
+                : currentLang === 'fr'
+                    ? 'ℹ️ Saisissez un surnom pour vérifier la correspondance avec l’e-mail.'
+                    : 'ℹ️ أدخل لقبًا للتحقق من تطابق البريد الإلكتروني.';
+            return;
+        }
+
+        if (!emailMatchesNickname(email, nickname)) {
+            notice.style.display = 'block';
+            notice.style.color = '#ef4444';
+            notice.textContent = currentLang === 'en'
+                ? '⚠️ The email does not match the nickname. Please check it.'
+                : currentLang === 'fr'
+                    ? '⚠️ L’e-mail ne correspond pas au surnom. Vérifiez-le.'
+                    : '⚠️ البريد الإلكتروني لا يتطابق مع اللقب. يرجى التحقق منه.';
+            return;
+        }
+
+        notice.style.display = 'block';
+        notice.style.color = '#059669';
+        notice.textContent = currentLang === 'en'
+            ? '✅ Email verified successfully.'
+            : currentLang === 'fr'
+                ? '✅ E-mail vérifié avec succès.'
+                : '✅ تم التحقق من البريد الإلكتروني بنجاح.';
+    }
+
     function syncLikedProfiles() {
         likedProfiles = [...new Set(likedProfiles
             .map(name => normalizeNickname(name))
@@ -635,6 +690,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         updateStaticTexts();
+        updateEmailVerificationNotice();
         saveAndRender();
     }
 
@@ -741,6 +797,14 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             historyList.appendChild(li);
         });
+    }
+
+    if (welcomeNickname) {
+        welcomeNickname.addEventListener('input', updateEmailVerificationNotice);
+    }
+
+    if (welcomeEmail) {
+        welcomeEmail.addEventListener('input', updateEmailVerificationNotice);
     }
 
     if (startAppBtn) {
