@@ -101,6 +101,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    const DAY_MS = 24 * 60 * 60 * 1000;
+
     let tasks = safeJSONParse(STORAGE_KEY, []);
     let streak = Number(localStorage.getItem('nexus_streak')) || 0;
     let score = Number(localStorage.getItem('nexus_score')) || 50;
@@ -574,11 +576,7 @@ document.addEventListener('DOMContentLoaded', () => {
             guideTip1: 'guideTip1',
             guideTip2: 'guideTip2',
             guideTip1Text: 'guideTip1Text',
-            guideTip2Text: 'guideTip2Text',
-            openInboxBtn: 'inboxTitle',
-            openGuideBtn: 'guideTitleBtn',
-            themeToggle: 'themeTitle',
-            logoutBtn: 'logoutTitle'
+            guideTip2Text: 'guideTip2Text'
         };
 
         Object.entries(textBindings).forEach(([id, key]) => {
@@ -901,15 +899,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function checkDailyStreakAndDeterioration() {
         const now = Date.now();
-        const hoursPassed = (now - lastActiveTime) / (1000 * 60 * 60);
+        const elapsedDays = Math.floor((now - lastActiveTime) / DAY_MS);
 
-        if (hoursPassed >= 24) {
-            streak = 0;
-            score = Math.max(0, score - 25);
-            playSound('penalty');
-            triggerLiveBot('bad');
+        if (elapsedDays >= 1) {
+            streak += elapsedDays;
             lastActiveTime = now;
             localStorage.setItem('nexus_last_active', String(lastActiveTime));
+            localStorage.setItem('nexus_streak', String(streak));
             saveAndRender();
         }
     }
@@ -1116,13 +1112,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (tasks[originalIndex].completed) {
                     score += 10;
-                    streak += 1;
                     playSound('complete');
                     triggerLiveBot('good');
                     showToast(t('completeSuccess'));
                 } else {
                     score = Math.max(0, score - 10);
-                    streak = Math.max(0, streak - 1);
                 }
                 saveAndRender();
             });
@@ -1655,6 +1649,33 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     // 13. التشغيل الأولي المباشر والتأكيدي
     // ==========================================
+    document.addEventListener('contextmenu', (event) => {
+        event.preventDefault();
+    });
+
+    document.addEventListener('gesturestart', (event) => {
+        event.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('touchmove', (event) => {
+        if (event.touches && event.touches.length > 1) {
+            event.preventDefault();
+        }
+    }, { passive: false });
+
+    window.addEventListener('wheel', (event) => {
+        if (event.ctrlKey) {
+            event.preventDefault();
+        }
+    }, { passive: false });
+
+    window.addEventListener('keydown', (event) => {
+        const isZoomCombo = (event.ctrlKey || event.metaKey) && (event.key === '+' || event.key === '-' || event.key === '0' || event.key === '=');
+        if (isZoomCombo) {
+            event.preventDefault();
+        }
+    });
+
     applyLanguage(currentLang);
     checkOnboarding();
     checkDailyStreakAndDeterioration();
